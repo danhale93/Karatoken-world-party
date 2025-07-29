@@ -1,0 +1,62 @@
+{
+  "name": "karatoken-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "jest",
+    "install-tools": "node scripts/install-tools.js",
+    "setup-demucs": "pip install demucs",
+    "setup-whisper": "pip install openai-whisper",
+    "setup-ytdlp": "pip install yt-dlp"
+  },
+  "keywords": [
+    "karaoke",
+    "genre-swap",
+    "ai",
+    "music"
+  ],
+  "author": "Karatoken Team",
+  "license": "ISC",
+  "description": "AI-powered karaoke genre swapping backend with YouTube integration",
+  "dependencies": {
+    "audio-mixer": "^2.1.2",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.1.5",
+    "firebase-admin": "^13.4.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "form-data": "^4.0.0",
+    "fs-extra": "^11.1.1",
+    "marked": "^16.1.1",
+    "meyda": "^5.6.3",
+    "multer": "^2.0.2",
+    "music-metadata": "^7.13.0",
+    "node-cron": "^3.0.3",
+    "node-wav": "^0.0.2",
+    "openai": "^4.20.1",
+    "pitchfinder": "^2.3.2",
+    "python-shell": "^5.0.0",
+    "socket.io": "^4.7.4",
+    "temp": "^0.9.4",
+    "uuid": "^11.1.0",
+    "wav": "^1.0.2",
+    "ws": "^8.14.2",
+    "yt-dlp-wrap": "^2.3.12",
+    "ytdl-core": "^4.11.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "babel-jest": "^30.0.5",
+    "jest": "^30.0.5",
+    "nodemon": "^3.0.2",
+    "supertest": "^7.1.3"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.8.0"
+  }
+}

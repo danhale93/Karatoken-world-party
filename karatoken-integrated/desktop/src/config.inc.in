@@ -1,0 +1,83 @@
+{*
+    UltraStar WorldParty - Karaoke Game
+	
+	UltraStar WorldParty is the legal property of its developers, 
+	whose names	are too numerous to list here. Please refer to the 
+	COPYRIGHT file distributed with this source distribution.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. Check "LICENSE" file. If not, see 
+	<http://www.gnu.org/licenses/>.
+ *}
+
+{***************************************************************** 
+ * Configuration file for @PACKAGE_STRING@
+ * @configure_input@
+ *****************************************************************}
+
+{* Libraries *}
+
+{$IF Defined(IncludeConstants)}
+  lua_lib_name = '@lua_LIB_NAME@';
+  LUA_VERSION_INT     = @lua_VERSION_INT@;
+  LUA_VERSION_RELEASE = '@lua_VERSION_RELEASE@';
+  LUA_VERSION_MINOR   = '@lua_VERSION_MINOR@';
+  LUA_VERSION_MAJOR   = '@lua_VERSION_MAJOR@';
+  LUA_VERSION         = '@lua_VERSION@';
+  LUA_INTEGER_BITS    = @LUA_INTEGER_BITS@;
+{$IFEND}
+
+{$MACRO ON}
+{$IFNDEF FFMPEG_DIR}
+  {$DEFINE FFMPEG_DIR := 'ffmpeg-@FFMPEG_VERSION_MAJOR@.@FFMPEG_VERSION_MINOR@'}
+{$ENDIF}
+{$IF Defined(IncludeConstants)}
+  FFMPEG_VERSION_INT = @FFMPEG_VERSION_INT@;
+
+av__codec = 'libavcodec';
+LIBAVCODEC_VERSION_MAJOR = @libavcodec_VERSION_MAJOR@;
+LIBAVCODEC_VERSION_MINOR = @libavcodec_VERSION_MINOR@;
+LIBAVCODEC_VERSION_RELEASE = @libavcodec_VERSION_RELEASE@;
+
+av__format = 'libavformat';
+LIBAVFORMAT_VERSION_MAJOR = @libavformat_VERSION_MAJOR@;
+LIBAVFORMAT_VERSION_MINOR = @libavformat_VERSION_MINOR@;
+LIBAVFORMAT_VERSION_RELEASE = @libavformat_VERSION_RELEASE@;
+
+av__util = 'libavutil';
+LIBAVUTIL_VERSION_MAJOR = @libavutil_VERSION_MAJOR@;
+LIBAVUTIL_VERSION_MINOR = @libavutil_VERSION_MINOR@;
+LIBAVUTIL_VERSION_RELEASE = @libavutil_VERSION_RELEASE@;
+{$IFEND}
+
+{$IF Defined(IncludeConstants)}
+  sw__scale = 'libswscale';
+  LIBSWSCALE_VERSION_MAJOR   = @libswscale_VERSION_MAJOR@;
+  LIBSWSCALE_VERSION_MINOR   = @libswscale_VERSION_MINOR@;
+  LIBSWSCALE_VERSION_RELEASE = @libswscale_VERSION_RELEASE@;
+{$IFEND}
+
+{$IF Defined(IncludeConstants)}
+  sw__resample = 'libswresample';
+  LIBSWRESAMPLE_VERSION_MAJOR   = @libswresample_VERSION_MAJOR@;
+  LIBSWRESAMPLE_VERSION_MINOR   = @libswresample_VERSION_MINOR@;
+  LIBSWRESAMPLE_VERSION_RELEASE = @libswresample_VERSION_RELEASE@;
+{$IFEND}
+
+{$@DEFINE_HAVE_PROJECTM@ HaveProjectM}
+{$IF Defined(HaveProjectM) and Defined(IncludeConstants)}
+  ProjectM_DataDir = '@libprojectM_DATADIR@';
+  PROJECTM_VERSION_MAJOR   = @libprojectM_VERSION_MAJOR@;
+  PROJECTM_VERSION_MINOR   = @libprojectM_VERSION_MINOR@;
+  PROJECTM_VERSION_RELEASE = @libprojectM_VERSION_RELEASE@;
+{$IFEND}

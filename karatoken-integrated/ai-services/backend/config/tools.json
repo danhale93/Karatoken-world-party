@@ -1,0 +1,71 @@
+{
+  "tools": {
+    "ytdlp": {
+      "enabled": true,
+      "path": "yt-dlp",
+      "version": "latest"
+    },
+    "demucs": {
+      "enabled": true,
+      "path": "demucs",
+      "model": "htdemucs",
+      "version": "latest"
+    },
+    "whisper": {
+      "enabled": true,
+      "path": "whisper",
+      "model": "base",
+      "version": "latest"
+    },
+    "ffmpeg": {
+      "enabled": true,
+      "path": "ffmpeg",
+      "version": "latest"
+    }
+  },
+  "processing": {
+    "maxConcurrentJobs": 3,
+    "tempDir": "./temp",
+    "outputDir": "./public/genre-swaps",
+    "maxFileSize": "100MB",
+    "supportedFormats": [
+      "wav",
+      "mp3",
+      "flac"
+    ]
+  },
+  "genres": {
+    "rock": {
+      "effects": [
+        "highpass=f=200",
+        "lowpass=f=8000",
+        "volume=1.2"
+      ],
+      "description": "High energy, distorted guitars"
+    },
+    "jazz": {
+      "effects": [
+        "highpass=f=100",
+        "lowpass=f=6000",
+        "volume=0.9"
+      ],
+      "description": "Smooth, sophisticated sound"
+    },
+    "electronic": {
+      "effects": [
+        "highpass=f=50",
+        "lowpass=f=10000",
+        "volume=1.1"
+      ],
+      "description": "Synthetic, digital processing"
+    },
+    "classical": {
+      "effects": [
+        "highpass=f=80",
+        "lowpass=f=5000",
+        "volume=0.8"
+      ],
+      "description": "Clean, orchestral sound"
+    }
+  }
+}

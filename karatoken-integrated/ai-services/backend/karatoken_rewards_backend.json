@@ -1,0 +1,109 @@
+{
+  "description": "Reward, royalty, and smart contract logic configuration for Karatoken MVP (copilot-ready)",
+  "version": "1.2.0",
+  "rewardSystem": {
+    "basePerformanceReward": 5,
+    "aiScoringTiers": {
+      "gold": {
+        "range": "90-100",
+        "multiplier": 2.0,
+        "description": "Gold Tier - Highest accuracy"
+      },
+      "silver": {
+        "range": "70-89",
+        "multiplier": 1.0,
+        "description": "Silver Tier - Good performance"
+      },
+      "bronze": {
+        "range": "50-69",
+        "multiplier": 0.5,
+        "description": "Bronze Tier - Needs improvement"
+      },
+      "fail": {
+        "range": "0-49",
+        "multiplier": 0,
+        "description": "No reward, participation only"
+      }
+    },
+    "engagementBonuses": {
+      "dailyLoginStreak": {
+        "enabled": true,
+        "rewards": [1, 2, 3, 4, 5, 7, 10]
+      },
+      "referralBonus": 3,
+      "challengeCompletionBonus": 4,
+      "livestreamShareBonus": 2
+    },
+    "luckBasedBonuses": {
+      "goldenNoteSpin": {
+        "triggerFrequency": 5,
+        "possibleRewards": [0, 2, 5, 10, "vaultKey"]
+      },
+      "mysteryVault": {
+        "unlockAfter": 7,
+        "bonusRange": [5, 15]
+      }
+    },
+    "competitionRewards": {
+      "weeklyTop3": [100, 50, 25],
+      "monthlyTop3": [500, 250, 100],
+      "badges": ["🔥 Super Star", "💎 Rising Talent", "🌟 Fan Favorite"]
+    },
+    "maxPerformancePayout": 15,
+    "currency": "KAR"
+  },
+  "royaltySystem": {
+    "trackRegistration": {
+      "requiredFields": ["title", "artist", "composer", "publisher", "rightsHolderAddress"],
+      "verification": "manual_or_blockchain"
+    },
+    "payoutRules": {
+      "streaming": {
+        "perPlayValue": 0.01,
+        "minPlayDuration": 30
+      },
+      "download": {
+        "fixedRoyalty": 0.50
+      },
+      "livePerformance": {
+        "perMinute": 0.05,
+        "audienceMultiplier": true
+      },
+      "coverPerformance": {
+        "split": {
+          "originalRightsHolder": 0.7,
+          "performer": 0.3
+        }
+      }
+    },
+    "distributionFrequency": "monthly",
+    "currency": "KAR",
+    "royaltyTracking": {
+      "ledgerType": "blockchain_or_internal",
+      "transparency": true
+    }
+  },
+  "smartContractLogic": {
+    "contracts": {
+      "RewardPayout": {
+        "language": "Solidity",
+        "function": "distributeRewards(address performer, uint256 score, uint256 engagement, string memory tier)",
+        "notes": "Calls reward system rules and transfers KAR tokens to user wallets."
+      },
+      "RoyaltyDistribution": {
+        "language": "Solidity",
+        "function": "distributeRoyalties(address rightsHolder, address performer, string memory type, uint256 value)",
+        "notes": "Executes per play/download/cover rules with correct token distribution."
+      },
+      "VaultUnlock": {
+        "language": "Solidity",
+        "function": "unlockMysteryVault(address user, uint256 streakDays)",
+        "notes": "Rewards bonus from vault logic based on streak and bonus range."
+      }
+    },
+    "deploymentNetwork": "Polygon or Solana",
+    "auditRequired": true,
+    "tokenStandard": "ERC-20 compatible (KAR token)"
+  },
+  "note": "This file can be consumed by backend services, Copilot agent, and smart contract developers to implement Karatoken's full reward, royalty, and token distribution system."
+}

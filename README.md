@@ -1,37 +1,91 @@
-[![PayPal Donation](https://github.com/Daniel20Ultrastar-es/WorldParty-testing/blob/master/promo/Donate-Paypal.svg)](https://www.paypal.com/cgi-bin/webscr?item_name=Ultrastar+Espa%f1a+&cmd=_donations&currency_code=EUR&business=donaciones%40ultrastar-es.org)
-[![ultrastar-worldparty](https://snapcraft.io/ultrastar-worldparty/badge.svg)](https://snapcraft.io/ultrastar-worldparty)
-[![ultrastar-worldparty](https://snapcraft.io/ultrastar-worldparty/trending.svg?name=0)](https://snapcraft.io/ultrastar-worldparty)
+# Karatoken - Integrated Karaoke Platform
 
-# UltraStar WorldParty
+![Karatoken Logo](assets/images/karatoken-logo.png)
 
+Karatoken is an integrated karaoke platform that combines the best features of Ultrastar WorldParty with modern blockchain technology and AI-powered features. It provides both desktop and mobile experiences for karaoke enthusiasts.
 
-![WorldParty logo](https://github.com/Daniel20Ultrastar-es/usdxworldparty/blob/master/promo/Worldparty%20logo.png)
+## Features
 
-UltraStar WorldParty is a free and open source karaoke game.  It allows
-up to six players to sing along with music using microphones in order to
-score points, depending on the pitch of the voice and the rhythm of
-singing.
+### 🎤 Core Karaoke Features (from Ultrastar WorldParty)
+- **Multi-player Support**: Up to 6 players can sing simultaneously
+- **Pitch Detection**: Real-time voice pitch analysis and scoring
+- **Rhythm Recognition**: Beat synchronization and scoring
+- **Song Library**: Extensive collection of karaoke songs
+- **Custom Themes**: Multiple visual themes and skins
+- **Avatar System**: Personalized player avatars
+- **Multi-language Support**: Internationalization support
 
-UltraStar WorldParty is a fork of the original UltraStar Deluxe 1.1
-We added new features such as new selection song, avatars, themes,
-skins, font, improved camera and mouse support, thousands of new options
-come with this new version. Check it out!
+### 🚀 Modern Features (from Karatoken)
+- **Blockchain Integration**: KRT token rewards and NFT collectibles
+- **AI-Powered Features**: 
+  - AI Genre Swapping
+  - AI Scoring Coach
+  - Vocal Isolation
+- **Social Features**: Performance sharing and competitions
+- **Cross-Platform**: Desktop, mobile, and web support
+- **Real-time Collaboration**: Multi-user karaoke sessions
 
------------------
-Official Website:  https://ultrastar-es.org
------------------
+## Project Structure
 
-## Documentation
-Visit our [Wiki](https://github.com/ultrastares/ultrastar-worldparty/wiki) to get help about how to compile the game, see changelog, etc..
+```
+karatoken-integrated/
+├── desktop/                 # Native desktop application (Delphi/Pascal)
+├── mobile/                  # React Native mobile app
+├── web/                     # Web application
+├── shared/                  # Shared components and utilities
+├── blockchain/              # Smart contracts and blockchain integration
+├── ai-services/             # AI-powered features
+└── docs/                    # Documentation
+```
 
-## Support and contact
-Visit our [official website](https://ultrastar-es.org) where you can find tutorials, songs, contests and more
+## Quick Start
 
-also visit our [forum](https://ultrastar-es.org/foro) where you can ask any problem or doubt you get (we speak mainly in Spanish and English)
+### Desktop Application
+```bash
+cd desktop
+# Follow Delphi/Lazarus setup instructions
+```
 
-## Screenshots
-![WorldParty logo](https://github.com/Daniel20Ultrastar-es/usdxworldparty/blob/master/promo/promocion1.gif)
+### Mobile Application
+```bash
+cd mobile
+npm install
+npm start
+```
 
-![WorldParty logo](https://github.com/Daniel20Ultrastar-es/usdxworldparty/blob/master/promo/promocion2.gif)
+### Web Application
+```bash
+cd web
+npm install
+npm run dev
+```
 
-![WorldParty logo](https://github.com/Daniel20Ultrastar-es/usdxworldparty/blob/master/promo/promocion3.gif)
+## Technology Stack
+
+- **Desktop**: Delphi/Pascal with SDL2, OpenGL, FFmpeg
+- **Mobile**: React Native with Expo
+- **Web**: React with Next.js
+- **Blockchain**: Ethereum/Solidity
+- **AI Services**: Python with TensorFlow/PyTorch
+- **Database**: Supabase (PostgreSQL)
+- **Real-time**: WebRTC, Zego Cloud
+
+## Contributing
+
+Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- **Documentation**: [Wiki](https://github.com/your-org/karatoken-integrated/wiki)
+- **Issues**: [GitHub Issues](https://github.com/your-org/karatoken-integrated/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-org/karatoken-integrated/discussions)
+
+## Acknowledgments
+
+- **Ultrastar WorldParty Team**: For the excellent karaoke engine
+- **Karatoken Team**: For the blockchain and AI integration concepts
+- **Open Source Community**: For the amazing libraries and tools used
