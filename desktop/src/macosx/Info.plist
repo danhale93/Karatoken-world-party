@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleDisplayName</key>
+	<string>UltraStarDeluxeWorldParty</string>
+	<key>CFBundleExecutable</key>
+	<string>WorldParty</string>
+	<key>CFBundleGetInfoString</key>
+	<string>UltraStar WorldParty, a karaoke game</string>
+	<key>CFBundleIconFile</key>
+	<string>WorldParty.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string>ultrastar-es.org</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>UltraStarDeluxeWorldParty</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>18.11</string>
+	<key>CFBundleSignature</key>
+	<string>USDXWP</string>
+	<key>CFBundleVersion</key>
+	<string>18.11</string>
+	<key>NSAppleScriptEnabled</key>
+	<false/>
+	<key>NSHumanReadableCopyright</key>
+	<string>LGPL</string>
+	<key>NSMainNibFile</key>
+	<string>SDLMain</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+</dict>
+</plist>

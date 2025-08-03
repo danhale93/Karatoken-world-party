@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="12"/>
+    <BuildModes Active="Default"/>
+    <Units>
+      <Unit>
+        <Filename Value="Karatoken.dpr"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="91"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="lua\UHookableEvent.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="91"/>
+      </Unit>
+      <Unit>
+        <Filename Value="lua\ULua.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="91"/>
+      </Unit>
+      <Unit>
+        <Filename Value="lua\ULuaCore.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="91"/>
+      </Unit>
+      <Unit>
+        <Filename Value="lib\bass\BASS.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="86"/>
+      </Unit>
+      <Unit>
+        <Filename Value="lib\bass_fx\BASS_FX.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UsageCount Value="86"/>
+      </Unit>
+      <Unit>
+        <Filename Value="switches.inc"/>
+        <EditorIndex Value="12"/>
+        <TopLine Value="30"/>
+        <CursorPos X="4" Y="40"/>
+        <UsageCount Value="45"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="menu\UDisplay.pas"/>
+        <EditorIndex Value="10"/>
+        <TopLine Value="29"/>
+        <CursorPos X="3" Y="39"/>
+        <UsageCount Value="45"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="base\UWebcam.pas"/>
+        <EditorIndex Value="11"/>
+        <TopLine Value="26"/>
+        <CursorPos X="3" Y="36"/>
+        <UsageCount Value="45"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="base\UPlatformLinux.pas"/>
+        <EditorIndex Value="9"/>
+        <TopLine Value="55"/>
+        <CursorPos X="4" Y="65"/>
+        <UsageCount Value="45"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="base\paths.inc"/>
+        <EditorIndex Value="8"/>
+        <UsageCount Value="45"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="base\UPlatformMacOSX.pas"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="194"/>
+        <CursorPos X="35" Y="202"/>
+        <UsageCount Value="45"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="media\UAudioCore_Bass.pas"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="32"/>
+        <CursorPos X="48" Y="37"/>
+        <UsageCount Value="44"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="lib\midi\MidiType.pas"/>
+        <EditorIndex Value="7"/>
+        <TopLine Value="15"/>
+        <CursorPos X="3" Y="20"/>
+        <UsageCount Value="44"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="media\UAudioConverter.pas"/>
+        <EditorIndex Value="6"/>
+        <TopLine Value="68"/>
+        <CursorPos X="3" Y="73"/>
+        <UsageCount Value="43"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="media\UAudioInput_Bass.pas"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="307"/>
+        <CursorPos X="40" Y="311"/>
+        <UsageCount Value="43"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="media\UAudioPlayback_SoftMixer.pas"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="195"/>
+        <CursorPos X="3" Y="200"/>
+        <UsageCount Value="43"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="media\UAudioPlayback_Bass.pas"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="874"/>
+        <CursorPos X="24" Y="879"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit>
+    </Units>
+    <JumpHistory HistoryIndex="29">
+      <Position>
+        <Filename Value="Karatoken.dpr"/>
+        <Caret Line="32" Column="2" TopLine="22"/>
+      </Position>
+      <Position>
+        <Filename Value="switches.inc"/>
+        <Caret Line="40" Column="4" TopLine="30"/>
+      </Position>
+      <Position>
+        <Filename Value="Karatoken.dpr"/>
+        <Caret Line="48" Column="3" TopLine="38"/>
+      </Position>
+      <Position>
+        <Filename Value="menu\UDisplay.pas"/>
+        <Caret Line="39" Column="3" TopLine="29"/>
+      </Position>
+      <Position>
+        <Filename Value="base\UWebcam.pas"/>
+        <Caret Line="36" Column="3" TopLine="26"/>
+      </Position>
+      <Position>
+        <Filename Value="Karatoken.dpr"/>
+        <Caret Line="48" Column="3" TopLine="38"/>
+      </Position>
+      <Position>
+        <Filename Value="base\UPlatformLinux.pas"/>
+        <Caret Line="58" Column="3" TopLine="48"/>
+      </Position>
+      <Position>
+        <Filename Value="base\UPlatformLinux.pas"/>
+        <Caret Line="62" Column="8" TopLine="48"/>
+      </Position>
+      <Position>
+        <Filename Value="Karatoken.dpr"/>
+        <Caret Line="48" Column="3" TopLine="38"/>
+      </Position>
+      <Position>
+        <Filename Value="base\UPlatformLinux.pas"/>
+        <Caret Line="71" Column="73" TopLine="55"/>
+      </Position>
+      <Position>
+        <Filename Value="Karatoken.dpr"/>
+        <Caret Line="48" Column="3" TopLine="38"/>
+      </Position>
+      <Position>
+        <Filename Value="base\UPlatformLinux.pas"/>
+        <Caret Line="65" Column="4" TopLine="55"/>
+      </Position>
+      <Position>
+        <Filename Value="base\UPlatformMacOSX.pas"/>
+        <Caret Line="141" Column="39" TopLine="132"/>
+      </Position>
+      <Position>
+        <Filename Value="base\UPlatformMacOSX.pas"/>
+        <Caret Line="162" Column="3" TopLine="153"/>
+      </Position>
+      <Position>
+        <Filename Value="base\UPlatformMacOSX.pas"/>
+        <Caret Line="141" Column="32" TopLine="132"/>
+      </Position>
+      <Position>
+        <Filename Value="base\UPlatformMacOSX.pas"/>
+        <Caret Line="166" TopLine="157"/>
+      </Position>
+      <Position>
+        <Filename Value="base\UPlatformMacOSX.pas"/>
+        <Caret Line="164" Column="11" TopLine="164"/>
+      </Position>
+      <Position>
+        <Filename Value="base\UPlatformMacOSX.pas"/>
+        <Caret Line="202" Column="21" TopLine="192"/>
+      </Position>
+      <Position>
+        <Filename Value="media\UAudioCore_Bass.pas"/>
+        <Caret Line="37" Column="3" TopLine="32"/>
+      </Position>
+      <Position>
+        <Filename Value="lib\midi\MidiType.pas"/>
+        <Caret Line="20" Column="3" TopLine="15"/>
+      </Position>
+      <Position>
+        <Filename Value="media\UAudioCore_Bass.pas"/>
+        <Caret Line="37" Column="3" TopLine="32"/>
+      </Position>
+      <Position>
+        <Filename Value="media\UAudioConverter.pas"/>
+        <Caret Line="73" Column="3" TopLine="68"/>
+      </Position>
+      <Position>
+        <Filename Value="Karatoken.dpr"/>
+      </Position>
+      <Position>
+        <Filename Value="media\UAudioCore_Bass.pas"/>
+        <Caret Line="37" Column="3" TopLine="32"/>
+      </Position>
+      <Position>
+        <Filename Value="media\UAudioInput_Bass.pas"/>
+        <Caret Line="311" Column="40" TopLine="307"/>
+      </Position>
+      <Position>
+        <Filename Value="media\UAudioPlayback_SoftMixer.pas"/>
+        <Caret Line="200" Column="3" TopLine="195"/>
+      </Position>
+      <Position>
+        <Filename Value="Karatoken.dpr"/>
+      </Position>
+      <Position>
+        <Filename Value="media\UAudioPlayback_SoftMixer.pas"/>
+        <Caret Line="200" TopLine="195"/>
+      </Position>
+      <Position>
+        <Filename Value="Karatoken.dpr"/>
+      </Position>
+      <Position>
+        <Filename Value="media\UAudioPlayback_SoftMixer.pas"/>
+        <Caret Line="200" Column="3" TopLine="195"/>
+      </Position>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+  <Debugging>
+    <BreakPoints>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="media\UAudioCore_Bass.pas"/>
+        <Line Value="37"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="media\UAudioPlayback_SoftMixer.pas"/>
+        <Line Value="200"/>
+      </Item>
+    </BreakPoints>
+  </Debugging>
+</CONFIG>

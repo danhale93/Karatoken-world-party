@@ -74,7 +74,7 @@ uses
   UMediaCore_FFmpeg in 'media\UMediaCore_FFmpeg.pas',
 
   {$IFDEF UseProjectM}
-  projectM      in 'lib\projectM\projectM.pas',
+  projectM      in 'lib\projectM\PROJECTM.pas',
   {$ENDIF}
 
   {$IFDEF UseMIDIPort}
@@ -97,7 +97,7 @@ uses
   LazUTF8Classes in 'lib\Lazarus\components\lazutils\lazutf8classes.pas',
   Masks in 'lib\Lazarus\components\lazutils\masks.pas',
   {$ENDIF}
-  CpuCount in 'lib\other\CPUCOUNT.pas',
+  CpuCount in 'lib\other\cpucount.pas',
   {$IFDEF MSWINDOWS}
   // FPC compatibility file for Allocate/DeallocateHWnd
   WinAllocation in 'lib\other\WinAllocation.pas',
@@ -184,8 +184,6 @@ uses
   //------------------------------
   //Includes - Media Classes
   //------------------------------
-  BASS                   in 'lib\bass\BASS.pas',
-  BASS_FX                in 'lib\bass_fx\BASS_FX.pas',
   UAudioConverter        in 'media\UAudioConverter.pas',
   UAudioCore_Bass        in 'media\UAudioCore_Bass.pas',
   UAudioDecoder_Bass     in 'media\UAudioDecoder_Bass.pas',
