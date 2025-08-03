@@ -6,7 +6,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routers
-const aiGenreSwapApi = require('./aiGenreSwapApi');
+const { router: aiGenreSwapApi } = require('./aiGenreSwapApi');
 const lyricsApi = require('./lyricsApi');
 const youtubeAudioApi = require('./youtubeAudioApi');
 const vocalIsolateApi = require('./vocalIsolateApi');

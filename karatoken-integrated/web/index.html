@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Commit Editor - UltraStar WorldParty</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1><i class="fab fa-git-alt"></i> Git Commit Editor</h1>
+                <div class="branch-info">
+                    <span class="branch-icon"><i class="fas fa-code-branch"></i></span>
+                    <span id="current-branch">main</span>
+                    <span class="pr-info" id="pr-info" style="display: none;">
+                        <i class="fas fa-code-pull-request"></i>
+                        <span id="pr-number">#123</span>
+                    </span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-secondary" id="refresh-btn" title="Refresh Git Status (Ctrl+R)">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="btn btn-secondary" id="settings-btn" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <!-- Staging Area -->
+                <section class="panel staging-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-plus-circle"></i> Staging Area</h3>
+                        <div class="panel-actions">
+                            <button class="btn-icon" id="stage-all-btn" title="Stage All Changes (Ctrl+A)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="btn-icon" id="unstage-all-btn" title="Unstage All Changes (Ctrl+U)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="file-list" id="staged-files">
+                        <div class="loading">Loading staged files...</div>
+                    </div>
+                </section>
+
+                <!-- Unstaged Changes -->
+                <section class="panel changes-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-edit"></i> Unstaged Changes</h3>
+                        <span class="file-count" id="unstaged-count">0</span>
+                    </div>
+                    <div class="file-list" id="unstaged-files">
+                        <div class="loading">Loading unstaged files...</div>
+                    </div>
+                </section>
+
+                <!-- Recent Commits -->
+                <section class="panel history-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-history"></i> Recent Commits</h3>
+                        <button class="btn-icon" id="show-more-history" title="Show More History">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                    <div class="commit-history" id="commit-history">
+                        <div class="loading">Loading commit history...</div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <!-- Commit Message Editor -->
+                <section class="panel commit-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-comment-alt"></i> Commit Message</h3>
+                        <div class="panel-actions">
+                            <button class="btn-icon" id="spell-check-btn" title="Toggle Spell Check (F7)">
+                                <i class="fas fa-spell-check"></i>
+                            </button>
+                            <button class="btn-icon" id="ai-suggest-btn" title="AI Suggestions (Ctrl+I)">
+                                <i class="fas fa-magic"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Commit Type Templates -->
+                    <div class="commit-templates">
+                        <button class="template-btn active" data-type="feat">
+                            <i class="fas fa-plus"></i> Feature
+                        </button>
+                        <button class="template-btn" data-type="fix">
+                            <i class="fas fa-bug"></i> Bugfix
+                        </button>
+                        <button class="template-btn" data-type="refactor">
+                            <i class="fas fa-code"></i> Refactor
+                        </button>
+                        <button class="template-btn" data-type="docs">
+                            <i class="fas fa-file-alt"></i> Docs
+                        </button>
+                        <button class="template-btn" data-type="style">
+                            <i class="fas fa-paint-brush"></i> Style
+                        </button>
+                        <button class="template-btn" data-type="test">
+                            <i class="fas fa-vial"></i> Test
+                        </button>
+                        <button class="template-btn" data-type="chore">
+                            <i class="fas fa-wrench"></i> Chore
+                        </button>
+                    </div>
+
+                    <!-- Message Input -->
+                    <div class="message-input-container">
+                        <div class="input-group">
+                            <label for="commit-subject">Subject Line</label>
+                            <div class="subject-input-wrapper">
+                                <input type="text" id="commit-subject" placeholder="Brief description of changes" maxlength="72" autocomplete="off" spellcheck="true">
+                                <div class="char-counter">
+                                    <span id="subject-length">0</span>/72
+                                </div>
+                            </div>
+                            <div class="validation-message" id="subject-validation"></div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="commit-body">Description (Optional)</label>
+                            <textarea id="commit-body" placeholder="Detailed explanation of what and why..." rows="8" spellcheck="true"></textarea>
+                            <div class="formatting-help">
+                                <small>
+                                    <i class="fas fa-info-circle"></i>
+                                    Use markdown formatting. Wrap at 72 characters per line.
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- AI Suggestions -->
+                        <div class="ai-suggestions" id="ai-suggestions" style="display: none;">
+                            <h4><i class="fas fa-magic"></i> AI Suggestions</h4>
+                            <div class="suggestions-list" id="suggestions-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Commit Actions -->
+                    <div class="commit-actions">
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary" id="save-draft-btn">
+                                <i class="fas fa-save"></i> Save Draft
+                            </button>
+                            <button class="btn btn-secondary" id="load-draft-btn">
+                                <i class="fas fa-folder-open"></i> Load Draft
+                            </button>
+                            <button class="btn btn-primary" id="commit-btn" disabled>
+                                <i class="fas fa-check"></i> Commit Changes
+                            </button>
+                        </div>
+                        <div class="commit-options">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="amend-commit">
+                                <span class="checkmark"></span>
+                                Amend last commit
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="sign-commit">
+                                <span class="checkmark"></span>
+                                Sign commit (GPG)
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quick Actions -->
+                <section class="panel quick-actions-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" id="git-status-btn">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Git Status</span>
+                        </button>
+                        <button class="quick-action-btn" id="git-diff-btn">
+                            <i class="fas fa-code-compare"></i>
+                            <span>View Diff</span>
+                        </button>
+                        <button class="quick-action-btn" id="git-log-btn">
+                            <i class="fas fa-list"></i>
+                            <span>Git Log</span>
+                        </button>
+                        <button class="quick-action-btn" id="git-push-btn">
+                            <i class="fas fa-upload"></i>
+                            <span>Push</span>
+                        </button>
+                        <button class="quick-action-btn" id="git-pull-btn">
+                            <i class="fas fa-download"></i>
+                            <span>Pull</span>
+                        </button>
+                        <button class="quick-action-btn" id="git-stash-btn">
+                            <i class="fas fa-archive"></i>
+                            <span>Stash</span>
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="status-item" id="git-status">
+                    <i class="fas fa-circle status-indicator"></i>
+                    Ready
+                </span>
+                <span class="status-item" id="file-count">
+                    0 staged, 0 unstaged
+                </span>
+            </div>
+            <div class="status-right">
+                <span class="status-item" id="auto-save-status">
+                    <i class="fas fa-save"></i>
+                    Auto-saved
+                </span>
+                <span class="status-item" id="spell-check-status">
+                    <i class="fas fa-spell-check"></i>
+                    Spell check: ON
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Settings</h3>
+                <button class="modal-close" id="settings-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label>Auto-save interval (seconds)</label>
+                    <input type="number" id="autosave-interval" value="30" min="10" max="300">
+                </div>
+                <div class="setting-group">
+                    <label>Default commit type</label>
+                    <select id="default-commit-type">
+                        <option value="feat">Feature</option>
+                        <option value="fix">Bugfix</option>
+                        <option value="refactor">Refactor</option>
+                        <option value="docs">Documentation</option>
+                        <option value="style">Style</option>
+                        <option value="test">Test</option>
+                        <option value="chore">Chore</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="enable-spell-check" checked>
+                        <span class="checkmark"></span>
+                        Enable spell check
+                    </label>
+                </div>
+                <div class="setting-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="enable-ai-suggestions" checked>
+                        <span class="checkmark"></span>
+                        Enable AI suggestions
+                    </label>
+                </div>
+                <div class="setting-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="validate-conventional-commits" checked>
+                        <span class="checkmark"></span>
+                        Validate conventional commits
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="settings-cancel">Cancel</button>
+                <button class="btn btn-primary" id="settings-save">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diff Viewer Modal -->
+    <div class="modal" id="diff-modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>File Diff</h3>
+                <button class="modal-close" id="diff-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="diff-container" id="diff-container">
+                    <pre id="diff-content"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Help -->
+    <div class="keyboard-shortcuts" id="keyboard-shortcuts" style="display: none;">
+        <div class="shortcuts-content">
+            <h4>Keyboard Shortcuts</h4>
+            <div class="shortcuts-grid">
+                <div class="shortcut-item">
+                    <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+                    <span>Commit changes</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl</kbd> + <kbd>S</kbd>
+                    <span>Save draft</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl</kbd> + <kbd>R</kbd>
+                    <span>Refresh status</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl</kbd> + <kbd>A</kbd>
+                    <span>Stage all files</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl</kbd> + <kbd>U</kbd>
+                    <span>Unstage all files</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl</kbd> + <kbd>I</kbd>
+                    <span>AI suggestions</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>F7</kbd>
+                    <span>Toggle spell check</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>?</kbd>
+                    <span>Show shortcuts</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
