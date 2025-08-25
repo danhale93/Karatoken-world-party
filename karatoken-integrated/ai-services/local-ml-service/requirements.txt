@@ -1,0 +1,9 @@
+fastapi==0.111.0
+uvicorn[standard]==0.30.0
+requests>=2.31.0
+# Optional (uncomment and install to enable real models)
+# demucs
+# faster-whisper
+# torch
+# torchaudio
+# audiocraft  # for MusicGen; see project docs for exact install steps

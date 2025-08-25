@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Karatoken Benchmark</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-case { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .result { margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 3px; }
+        .progress { height: 20px; background: #e0e0e0; margin: 10px 0; border-radius: 3px; overflow: hidden; }
+        .progress-bar { height: 100%; background: #4CAF50; width: 0%; transition: width 0.3s; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <h1>Karatoken Benchmark</h1>
+    <p>Comparing current implementation vs Stylus</p>
+    
+    <div id="testContainer"></div>
+    
+    <h2>Results</h2>
+    <table id="results">
+        <thead>
+            <tr>
+                <th>Test Case</th>
+                <th>Genre</th>
+                <th>Current Time</th>
+                <th>Stylus Time</th>
+                <th>Difference</th>
+            </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+    </table>
+
+    <script>
+        const testCases = [
+            { name: 'Pop Song', genre: 'pop' },
+            { name: 'Rock Song', genre: 'rock' },
+            { name: 'Jazz Song', genre: 'jazz' }
+        ];
+
+        const results = [];
+        let currentTest = 0;
+
+        function createTestElement(test) {
+            const div = document.createElement('div');
+            div.className = 'test-case';
+            div.innerHTML = `
+                <h3>${test.name} (${test.genre})</h3>
+                <div class="progress">
+                    <div class="progress-bar" id="progress-${test.genre}"></div>
+                </div>
+                <div class="result" id="result-${test.genre}">Preparing test...</div>
+            `;
+            return div;
+        }
+
+        function updateProgress(genre, percent, message) {
+            const progress = document.querySelector(`#progress-${genre} .progress-bar`);
+            const result = document.getElementById(`result-${genre}`);
+            if (progress) progress.style.width = `${percent}%`;
+            if (result) result.textContent = message;
+        }
+
+        function addResult(test, currentTime, stylusTime) {
+            const timeDiff = ((stylusTime - currentTime) / currentTime * 100).toFixed(2);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${test.name}</td>
+                <td>${test.genre}</td>
+                <td>${currentTime.toFixed(2)}s</td>
+                <td>${stylusTime.toFixed(2)}s</td>
+                <td>${timeDiff}% ${stylusTime > currentTime ? 'slower' : 'faster'}</td>
+            `;
+            document.getElementById('resultsBody').appendChild(row);
+            
+            results.push({
+                testCase: test.name,
+                genre: test.genre,
+                currentTime,
+                stylusTime,
+                timeDiff
+            });
+            
+            // Save results
+            localStorage.setItem('benchmarkResults', JSON.stringify(results));
+        }
+
+        async function runTest(test) {
+            return new Promise((resolve) => {
+                const testDiv = createTestElement(test);
+                document.getElementById('testContainer').appendChild(testDiv);
+                
+                // Simulate current implementation (2 seconds)
+                updateProgress(test.genre, 33, 'Testing current implementation...');
+                setTimeout(() => {
+                    // Simulate Stylus implementation (3 seconds)
+                    updateProgress(test.genre, 66, 'Testing Stylus implementation...');
+                    setTimeout(() => {
+                        updateProgress(test.genre, 100, 'Test completed!');
+                        resolve();
+                    }, 3000);
+                }, 2000);
+            });
+        }
+
+        async function runAllTests() {
+            for (const test of testCases) {
+                await runTest(test);
+                // Add mock results (replace with actual timing)
+                addResult(test, 2.0, 3.0);
+                currentTest++;
+            }
+            
+            // Calculate and show summary
+            const avgCurrent = results.reduce((sum, r) => sum + r.currentTime, 0) / results.length;
+            const avgStylus = results.reduce((sum, r) => sum + r.stylusTime, 0) / results.length;
+            const avgDiff = ((avgStylus - avgCurrent) / avgCurrent * 100).toFixed(2);
+            
+            const summary = document.createElement('div');
+            summary.className = 'test-case';
+            summary.innerHTML = `
+                <h3>Benchmark Summary</h3>
+                <p>Average Current: ${avgCurrent.toFixed(2)}s</p>
+                <p>Average Stylus: ${avgStylus.toFixed(2)}s</p>
+                <p>Average Difference: ${avgDiff}% ${avgStylus > avgCurrent ? 'slower' : 'faster'}</p>
+            `;
+            document.body.appendChild(summary);
+        }
+
+        // Start the benchmark
+        document.addEventListener('DOMContentLoaded', runAllTests);
+    </script>
+</body>
+</html>

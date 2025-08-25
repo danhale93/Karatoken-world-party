@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Karatoken Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=2" />
+  </head>
+  <body>
+    <header>
+      <h1>Karatoken</h1>
+      <p class="subtitle">Developer Preview</p>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>Backend Health</h2>
+        <button id="btn-health">Check Health</button>
+        <pre id="health-output" class="output">Click "Check Health"</pre>
+      </section>
+
+      <section class="card">
+        <h2>YouTube Search & Download</h2>
+        <div class="row">
+          <label for="yt-query">Search YouTube</label>
+          <div class="search-container">
+            <input 
+              type="text" 
+              id="yt-query" 
+              placeholder="Search for a song or artist..."
+              aria-label="YouTube search query"
+            />
+            <button id="btn-yt-search" class="search-button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Search</span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="row">
+          <label for="yt-url">Or paste YouTube URL</label>
+          <div class="url-input-container">
+            <input 
+              type="url" 
+              id="yt-url" 
+              placeholder="https://www.youtube.com/watch?v=..." 
+              aria-label="YouTube URL"
+            />
+            <button id="btn-yt-download" class="download-button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Download</span>
+            </button>
+          </div>
+        </div>
+        
+        <div id="yt-search-out" class="search-results">
+          <div class="placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" fill="#FF0000" fill-opacity="0.1" stroke="#FF0000" stroke-width="2"/>
+              <path d="M9.5 8.5V15.5L16 12L9.5 8.5Z" fill="#FF0000"/>
+            </svg>
+            <p>Search for a song to get started</p>
+          </div>
+        </div>
+        
+        <div id="yt-dl-out" class="download-status"></div>
+      </section>
+
+      <section class="card">
+        <h2>Genre Swap</h2>
+        <div class="row">
+          <label>Audio URL</label>
+          <input id="genre-audio-url" placeholder="https://example.com/audio.mp3" />
+        </div>
+        <div class="row">
+          <label>Target Genre</label>
+          <div class="genre-selector">
+            <input id="genre-target" placeholder="e.g. rock, edm, jazz" list="genre-presets" />
+            <datalist id="genre-presets">
+              <option value="rock">
+              <option value="pop">
+              <option value="jazz">
+              <option value="edm">
+              <option value="hiphop">
+              <option value="classical">
+              <option value="reggae">
+              <option value="metal">
+              <option value="country">
+              <option value="r&b">
+            </datalist>
+          </div>
+        </div>
+        <div class="row audio-preview">
+          <label>Audio Preview</label>
+          <audio id="audio-preview" controls class="audio-player"></audio>
+          <div id="audio-error" class="error-message audio-error">Could not load audio preview</div>
+        </div>
+        <button id="btn-genre-swap">Swap Genre</button>
+        <div class="row">
+          <div class="progress-container" aria-label="Progress">
+            <div class="progress-labels">
+              <span id="progress-status">Ready</span>
+              <span id="progress-percent">0%</span>
+            </div>
+            <div class="progress-bar-container">
+              <div id="genre-progress-bar" class="progress-bar"></div>
+            </div>
+            <div id="progress-details" class="progress-details"></div>
+          </div>
+        </div>
+        <pre id="genre-swap-out" class="output">Waiting…</pre>
+        <div class="row">
+          <audio id="genre-audio" controls class="audio-player"></audio>
+        </div>
+        <pre id="genre-lrc" class="output lrc-output">LRC will appear here…</pre>
+      </section>
+
+      <section class="card">
+        <h2>Spotify Callback Test</h2>
+        <p>Simulates the redirect target. In real flow, Spotify will send a code to this endpoint.</p>
+        <div class="row">
+          <label>Code</label>
+          <input id="code" placeholder="TEST_CODE" />
+        </div>
+        <div class="row">
+          <label>State</label>
+          <input id="state" placeholder="XYZ" />
+        </div>
+        <button id="btn-callback">Send Callback</button>
+        <pre id="callback-output" class="output">Waiting…</pre>
+      </section>
+    </main>
+
+    <footer>
+      <small> Karatoken Preview</small>
+    </footer>
+
+    <script src="script.js?v=3"></script>
+  </body>
+</html>

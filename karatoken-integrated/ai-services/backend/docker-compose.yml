@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: karatoken-backend
+    restart: unless-stopped
+    ports:
+      - "3103:3000" # Expose container port 3000 to host port 3103
+    env_file:
+      - .env
+    volumes:
+      # In development, you might want to mount the source code
+      # For production, it's better to rely on the code baked into the image
+      # - ./src:/app/src
+      - ./uploads:/app/uploads
+      - ./tmp:/app/tmp
+    networks:
+      - karatoken-net
+
+networks:
+  karatoken-net:
+    driver: bridge

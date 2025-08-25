@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karatoken MCP Control Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">Karatoken MCP Control Panel</h1>
+        
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="youtube-tab" data-bs-toggle="tab" data-bs-target="#youtube-tab-pane" type="button" role="tab">
+                    <i class="bi bi-youtube"></i> YouTube Import
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="usdb-tab" data-bs-toggle="tab" data-bs-target="#usdb-tab-pane" type="button" role="tab">
+                    <i class="bi bi-music-note-list"></i> USDB Lyrics
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="process-tab" data-bs-toggle="tab" data-bs-target="#process-tab-pane" type="button" role="tab">
+                    <i class="bi bi-gear"></i> Process Audio
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="active-jobs-tab" data-bs-toggle="tab" data-bs-target="#active-jobs-tab-pane" type="button" role="tab">
+                    <i class="bi bi-list-check"></i> Active Jobs
+                </button>
+                <button class="nav-link" id="job-history-tab" data-bs-toggle="tab" data-bs-target="#job-history-tab-pane" type="button" role="tab">
+                    <i class="bi bi-clock-history"></i> Job History
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="jobs-tab" data-bs-toggle="tab" data-bs-target="#jobs-tab-pane" type="button" role="tab">
+                    <i class="bi bi-list-check"></i> Jobs
+                </button>
+            </li>
+        </ul>
+        
+        <!-- Tab Content -->
+        <div class="tab-content" id="mainTabsContent">
+            <!-- YouTube Tab -->
+            <div class="tab-pane fade show active" id="youtube-tab-pane" role="tabpanel" aria-labelledby="youtube-tab">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <i class="bi bi-youtube"></i> YouTube Import
+                    </div>
+                    <div class="card-body">
+                        <div id="youtubeSearchContainer">
+                            <!-- YouTube search component will be rendered here -->
+                            <div class="text-center text-muted py-4">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading YouTube search...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- USDB Tab -->
+            <div class="tab-pane fade" id="usdb-tab-pane" role="tabpanel" aria-labelledby="usdb-tab">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <i class="bi bi-music-note-list"></i> UltraStar DB (USDB)
+                    </div>
+                    <div class="card-body">
+                        <div id="usdbSearchContainer">
+                            <!-- USDB search component will be rendered here -->
+                            <div class="text-center text-muted py-4">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading USDB search...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Process Tab -->
+            <div class="tab-pane fade" id="process-tab-pane" role="tabpanel" aria-labelledby="process-tab">
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <i class="bi bi-music-note"></i> Genre Swap
+                    </div>
+                    <div class="card-body">
+                        <form id="genreSwapForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="songTitle" class="form-label">Song Title <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="songTitle" required
+                                               placeholder="Enter song title">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="artistName" class="form-label">Artist Name</label>
+                                        <input type="text" class="form-control" id="artistName"
+                                               placeholder="Enter artist name">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="audioUrl" class="form-label">Audio URL <span class="text-danger">*</span></label>
+                                <input type="url" class="form-control" id="audioUrl" required 
+                                       placeholder="https://example.com/audio.mp3"
+                                       aria-describedby="audioUrlHelp">
+                                <div id="audioUrlHelp" class="form-text">Paste a direct audio URL or use the YouTube import feature</div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="genre" class="form-label">Target Genre <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="genre" required
+                                                aria-label="Select target genre">
+                                            <option value="">Select a genre</option>
+                                            <option value="pop">Pop</option>
+                                            <option value="rock">Rock</option>
+                                            <option value="jazz">Jazz</option>
+                                            <option value="electronic">Electronic</option>
+                                            <option value="classical">Classical</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="releaseYear" class="form-label">Release Year</label>
+                                        <input type="number" class="form-control" id="releaseYear"
+                                               min="1900" max="2099" step="1"
+                                               placeholder="e.g., 2023">
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-arrow-repeat"></i> Process Genre Swap
+                            </button>
+                        </form>
+                        <div id="genreSwapProgress" class="mt-3 d-none">
+                            <div class="progress mb-2">
+                                <div id="genreSwapProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+                                     style="width: 0%">
+                                    <span class="visually-hidden">Progress: 0%</span>
+                                </div>
+                            </div>
+                            <div id="genreSwapStatus" class="text-muted">Initializing...</div>
+                        </div>
+                        <div id="genreSwapResult" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <i class="bi bi-magic"></i> Stylus Transfer
+                    </div>
+                    <div class="card-body">
+                        <form id="stylusForm">
+                            <div class="mb-3">
+                                <label for="contentUrl" class="form-label">Content Audio URL</label>
+                                <input type="text" class="form-control" id="contentUrl" required
+                                       placeholder="https://example.com/audio.mp3">
+                            </div>
+                            <div class="mb-3">
+                                <label for="styleGenre" class="form-label">Style Genre</label>
+                                <select class="form-select" id="styleGenre" required>
+                                    <option value="">Select a style</option>
+                                    <option value="pop">Pop</option>
+                                    <option value="rock">Rock</option>
+                                    <option value="jazz">Jazz</option>
+                                    <option value="electronic">Electronic</option>
+                                    <option value="classical">Classical</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-stars"></i> Process Style Transfer
+                            </button>
+                        </form>
+                        <div id="stylusProgress" class="mt-3 d-none">
+                            <div class="progress mb-2">
+                                <div id="stylusProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                                     role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+                                     style="width: 0%">
+                                    <span class="visually-hidden">Progress: 0%</span>
+                                </div>
+                            </div>
+                            <div id="stylusStatus" class="text-muted">Initializing...</div>
+                        </div>
+                        <div id="stylusResult" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-list-check"></i> Active Jobs
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Job ID</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Progress</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobsList">
+                            <tr>
+                                <td colspan="5" class="text-center">No active jobs</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            </div>
+            
+            <!-- Active Jobs Tab -->
+            <div class="tab-pane fade show active" id="active-jobs-tab-pane" role="tabpanel" aria-labelledby="active-jobs-tab">
+                <div class="card">
+                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-list-check"></i> Active Jobs</span>
+                        <button id="refreshJobsBtn" class="btn btn-sm btn-light">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="activeJobsList" class="job-list">
+                            <div class="text-muted text-center py-4">No active jobs</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job History Tab -->
+            <div class="tab-pane fade" id="job-history-tab-pane" role="tabpanel" aria-labelledby="job-history-tab">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-clock-history"></i> Job History</span>
+                        <div class="btn-group btn-group-sm">
+                            <button id="refreshHistoryBtn" class="btn btn-light">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh
+                            </button>
+                            <button id="clearHistoryBtn" class="btn btn-outline-light" title="Clear History">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="jobHistoryList" class="job-history-list">
+                            <div class="text-muted text-center py-4">No job history available</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jobs Tab -->
+            <div class="tab-pane fade show active" id="jobs-tab-pane" role="tabpanel" aria-labelledby="jobs-tab">
+                <div class="card job-list-card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-task text-primary me-2"></i>
+                            Active Jobs
+                        </h5>
+                        <div class="d-flex">
+                            <button class="btn btn-sm btn-outline-primary" id="refreshJobs">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="15%">Job ID</th>
+                                        <th width="15%">Type</th>
+                                        <th width="15%">Status</th>
+                                        <th width="40%">Progress</th>
+                                        <th width="15%" class="text-end pe-3">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="jobsList">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5">
+                                            <div class="empty-state">
+                                                <i class="bi bi-inbox"></i>
+                                                <p class="mb-1">No active jobs</p>
+                                                <small class="text-muted">Submit a job to get started</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="bg-light">
+                                    <tr>
+                                        <td colspan="5" class="small text-muted px-3 py-2">
+                                            <div class="d-flex justify-content-between">
+                                                <span>Showing <span id="jobCount">0</span> jobs</span>
+                                                <span>Last updated: <span id="lastUpdated">Just now</span></span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-position-container">
+        <div id="toastContainer" class="toast-container"></div>
+    </div>
+    
+    <!-- Job Details Modal -->
+    <div class="modal fade" id="jobDetailsModal" tabindex="-1" aria-labelledby="jobDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title" id="jobDetailsModalLabel">
+                        <i class="bi bi-info-circle me-2"></i>Job Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" id="jobDetailsBody">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading job details...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Loading job details...</p>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg me-1"></i> Close
+                    </button>
+                    <div class="ms-auto" id="jobDetailsActions">
+                        <!-- Action buttons will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Modal -->
+    <div class="modal fade" id="processingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Processing</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p id="processingMessage">Processing your request...</p>
+                                <div class="progress mb-2">
+                                    <div id="processingProgress" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                         role="progressbar" 
+                                         aria-label="Processing progress"
+                                         aria-valuenow="0" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100"
+                                         style="width: 0%">
+                                        <span class="visually-hidden">Processing progress: 0%</span>
+                                    </div>
+                                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="/js/youtube.js"></script>
+    <script src="/js/usdb.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>

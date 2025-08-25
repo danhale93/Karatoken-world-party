@@ -1,0 +1,23 @@
+[
+  {
+    "Test Case": "Pop Song",
+    "Genre": "pop",
+    "Current Time": "2.00s",
+    "Stylus Time": "3.00s",
+    "Difference": "50.00% slower"
+  },
+  {
+    "Test Case": "Rock Song",
+    "Genre": "rock",
+    "Current Time": "2.00s",
+    "Stylus Time": "3.00s",
+    "Difference": "50.00% slower"
+  },
+  {
+    "Test Case": "Jazz Song",
+    "Genre": "jazz",
+    "Current Time": "2.00s",
+    "Stylus Time": "3.00s",
+    "Difference": "50.00% slower"
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "servers": [
+    {
+      "name": "genre-swap-mcp",
+      "type": "current",
+      "port": 3001,
+      "endpoints": {
+        "process": "/api/genre/swap",
+        "status": "/api/genre/status"
+      },
+      "maxWorkers": 4
+    },
+    {
+      "name": "stylus-mcp",
+      "type": "stylus",
+      "port": 3002,
+      "endpoints": {
+        "process": "/api/stylus/transfer",
+        "status": "/api/stylus/status"
+      },
+      "maxWorkers": 4
+    }
+  ],
+  "loadBalancer": {
+    "port": 3000,
+    "strategy": "round-robin"
+  }
+}
