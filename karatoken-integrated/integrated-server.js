@@ -319,13 +319,15 @@ app.get('/jobs/:jobId', (req, res) => {
 // File download endpoint
 app.get('/dl/:filename', (req, res) => {
   const { filename } = req.params;
-  const filepath = path.join(TMP_DIR, filename);
+  // Sanitize filename to prevent path traversal vulnerability (strip folder paths)
+  const safeFilename = path.basename(filename);
+  const filepath = path.join(TMP_DIR, safeFilename);
 
   if (!fs.existsSync(filepath)) {
     return res.status(404).json({ ok: false, error: 'File not found' });
   }
 
-  res.download(filepath, filename, (err) => {
+  res.download(filepath, safeFilename, (err) => {
     if (err) {
       console.error('Download error:', err);
       if (!res.headersSent) {
