@@ -39,17 +39,20 @@ def analyze_pitch(audio_data: np.ndarray, sr: int) -> dict:
     # Get pitch using librosa's piptrack
     pitches, magnitudes = librosa.piptrack(y=audio_data, sr=sr)
     
-    # Get the pitch values that exceed a certain magnitude threshold
-    pitch_values = []
-    for t in range(pitches.shape[1]):
-        index = magnitudes[:, t].argmax()
-        pitch = pitches[index, t]
-        if pitch > 0:  # Filter out silent frames
-            pitch_values.append(pitch)
+    # PERFORMANCE OPTIMIZATION: Vectorized search of maximum magnitudes across all frames.
+    # Avoids a slow Python for-loop querying argmax and copying elements.
+    best_indices = np.argmax(magnitudes, axis=0)
+    frame_indices = np.arange(pitches.shape[1])
+    best_pitches = pitches[best_indices, frame_indices]
+    pitch_values = best_pitches[best_pitches > 0]
+
+    # PERFORMANCE OPTIMIZATION: Cache valid pitches to avoid running pitches > 0 three times on massive arrays.
+    valid_pitches = pitches[pitches > 0]
+    has_valid = len(valid_pitches) > 0
     
     return {
-        'average_pitch': float(np.mean(pitches[pitches > 0])) if len(pitches[pitches > 0]) > 0 else 0,
-        'pitch_variance': float(np.var(pitches[pitches > 0])) if len(pitches[pitches > 0]) > 0 else 0,
+        'average_pitch': float(np.mean(valid_pitches)) if has_valid else 0,
+        'pitch_variance': float(np.var(valid_pitches)) if has_valid else 0,
         'total_notes': len(pitch_values)
     }
 

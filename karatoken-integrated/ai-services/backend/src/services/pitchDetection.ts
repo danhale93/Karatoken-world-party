@@ -19,7 +19,9 @@ export function detectPitch(audioBuffer: AudioBuffer, windowSize = 2048): number
   
   // Process the audio in chunks
   for (let i = 0; i < channelData.length - windowSize; i += Math.floor(windowSize / 2)) {
-    const chunk = channelData.slice(i, i + windowSize);
+    // PERFORMANCE OPTIMIZATION: Use subarray instead of slice to get a zero-allocation view.
+    // Avoids thousands of unnecessary Float32Array copies during pitch detection.
+    const chunk = channelData.subarray(i, i + windowSize);
     const [pitch, clarity] = detector.findPitch(chunk, sampleRate);
     
     // Only include pitches with sufficient clarity

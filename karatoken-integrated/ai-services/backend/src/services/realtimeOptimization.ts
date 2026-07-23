@@ -115,8 +115,9 @@ export class AudioProcessor {
 
       // Process in chunks
       for (let i = 0; i < channelData.length; i += chunkSize) {
-        const chunk = channelData.slice(i, i + chunkSize);
-        let processedChunk = new Float32Array(chunk);
+        // PERFORMANCE OPTIMIZATION: Slicing already returns a brand new Float32Array copy.
+        // Doing another `new Float32Array(...)` on top is redundant and slow.
+        let processedChunk = channelData.slice(i, i + chunkSize);
 
         // Apply effects in sequence
         for (const effect of effects) {
