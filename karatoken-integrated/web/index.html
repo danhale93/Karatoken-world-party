@@ -79,11 +79,11 @@
       <section class="card">
         <h2>Genre Swap</h2>
         <div class="row">
-          <label>Audio URL</label>
+          <label for="genre-audio-url">Audio URL</label>
           <input id="genre-audio-url" placeholder="https://example.com/audio.mp3" />
         </div>
         <div class="row">
-          <label>Target Genre</label>
+          <label for="genre-target">Target Genre</label>
           <div class="genre-selector">
             <input id="genre-target" placeholder="e.g. rock, edm, jazz" list="genre-presets" />
             <datalist id="genre-presets">
@@ -101,7 +101,7 @@
           </div>
         </div>
         <div class="row audio-preview">
-          <label>Audio Preview</label>
+          <label for="audio-preview">Audio Preview</label>
           <audio id="audio-preview" controls class="audio-player"></audio>
           <div id="audio-error" class="error-message audio-error">Could not load audio preview</div>
         </div>
@@ -129,11 +129,11 @@
         <h2>Spotify Callback Test</h2>
         <p>Simulates the redirect target. In real flow, Spotify will send a code to this endpoint.</p>
         <div class="row">
-          <label>Code</label>
+          <label for="code">Code</label>
           <input id="code" placeholder="TEST_CODE" />
         </div>
         <div class="row">
-          <label>State</label>
+          <label for="state">State</label>
           <input id="state" placeholder="XYZ" />
         </div>
         <button id="btn-callback">Send Callback</button>
