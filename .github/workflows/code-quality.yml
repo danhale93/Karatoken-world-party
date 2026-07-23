@@ -11,6 +11,9 @@ jobs:
   lint:
     name: Lint and Format
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: karatoken-integrated/ai-services/backend
     
     steps:
       - uses: actions/checkout@v3
@@ -18,9 +21,10 @@ jobs:
         with:
           node-version: '18.x'
           cache: 'npm'
+          cache-dependency-path: karatoken-integrated/ai-services/backend/package-lock.json
       
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
         
       - name: Run ESLint
         run: npm run lint
@@ -32,6 +36,9 @@ jobs:
     name: Run Tests
     needs: lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: karatoken-integrated/ai-services/backend
     
     steps:
       - uses: actions/checkout@v3
@@ -39,9 +46,10 @@ jobs:
         with:
           node-version: '18.x'
           cache: 'npm'
+          cache-dependency-path: karatoken-integrated/ai-services/backend/package-lock.json
           
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
         
       - name: Run tests with coverage
         run: npm test -- --coverage

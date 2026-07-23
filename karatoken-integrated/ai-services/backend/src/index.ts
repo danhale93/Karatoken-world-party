@@ -52,9 +52,13 @@ app.get('/health', (_req: Request, res: Response) => {
 
 // Force-download helper
 function safeJoin(base: string, target: string): string {
-  const p = path.normalize(path.join(base, target));
-  if (!p.startsWith(base)) throw new Error('Invalid path');
-  return p;
+  const resolvedBase = path.resolve(base);
+  const resolvedTarget = path.resolve(resolvedBase, target);
+  const relative = path.relative(resolvedBase, resolvedTarget);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error('Invalid path');
+  }
+  return resolvedTarget;
 }
 
 app.get('/dl/*', (req: Request, res: Response) => {

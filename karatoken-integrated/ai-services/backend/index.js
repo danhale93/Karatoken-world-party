@@ -40,9 +40,13 @@ app.get('/health', (req, res) => {
 
 // Force-download helper to avoid the browser trying to stream tiny/invalid files
 function safeJoin(base, target) {
-  const p = path.normalize(path.join(base, target));
-  if (!p.startsWith(base)) throw new Error('Invalid path');
-  return p;
+  const resolvedBase = path.resolve(base);
+  const resolvedTarget = path.resolve(resolvedBase, target);
+  const relative = path.relative(resolvedBase, resolvedTarget);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error('Invalid path');
+  }
+  return resolvedTarget;
 }
 app.get('/dl/*', (req, res) => {
   try {
