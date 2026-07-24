@@ -29,10 +29,10 @@ app.use(express.static(WEB_DIR));
 
 // Simple health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
+  res.json({
     status: 'ok',
     service: 'karatoken-backend',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 

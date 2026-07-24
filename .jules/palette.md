@@ -1,0 +1,3 @@
+## 2025-07-24 - Semantic Label Associations and Keyboard Shortcut Visualizations
+**Learning:** In multi-section forms, missing `for` associations on `<label>` elements make screen-readers less effective and reduce click target sizes. Additionally, background keyboard shortcuts implemented in JS should always be visually advertised on the primary buttons using `<kbd>` tags to bridge the gap between keyboard navigators and mouse users.
+**Action:** Always verify all `<label>` tags have explicit `for` bindings matching the control IDs, and display a subtle inline keyboard badge like `<kbd class="kbd-badge">` next to the button text when background listeners exist.

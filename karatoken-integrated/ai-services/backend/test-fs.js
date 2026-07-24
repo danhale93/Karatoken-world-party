@@ -12,7 +12,7 @@ console.log('Web directory:', WEB_DIR);
 try {
   const exists = fs.existsSync(WEB_DIR);
   console.log('Directory exists:', exists);
-  
+
   if (exists) {
     console.log('Directory contents:');
     const files = fs.readdirSync(WEB_DIR);

@@ -1,8 +1,7 @@
+import express, { Request, RequestHandler, Response } from 'express';
 import fs from 'fs';
 import { createServer } from 'http';
 import path from 'path';
-
-import express, { Request, Response, RequestHandler } from 'express';
 import { Server } from 'socket.io';
 
 // TODO: Uncomment when rate limiting is needed
@@ -74,13 +73,12 @@ export const initSocketIO = (server: ReturnType<typeof createServer>) => {
   io = new Server(server, {
     cors: {
       origin: process.env.CLIENT_URL || '*',
-      methods: ['GET', 'POST']
-    }
+      methods: ['GET', 'POST'],
+    },
   });
 
   return io;
 };
-
 
 // Cache middleware
 const cacheMiddleware: RequestHandler = async (req, res, next) => {
@@ -199,7 +197,7 @@ const validateInput: RequestHandler = (req, res, next) => {
   if (!targetGenre || typeof targetGenre !== 'string') {
     return res.status(400).json({ ok: false, error: 'Invalid targetGenre' });
   }
-  
+
   next();
 };
 

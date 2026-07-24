@@ -23,7 +23,7 @@ console.log('Web directory:', WEB_DIR);
 try {
   const exists = fs.existsSync(WEB_DIR);
   console.log('Web directory exists:', exists);
-  
+
   if (exists) {
     console.log('Web directory contents:', fs.readdirSync(WEB_DIR));
   }
@@ -54,7 +54,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 });
 
 // Handle errors
-server.on('error', (error) => {
+server.on('error', error => {
   if (error.code === 'EADDRINUSE') {
     console.error(`Port ${PORT} is already in use`);
   } else {
@@ -64,7 +64,7 @@ server.on('error', (error) => {
 });
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', err => {
   console.error('Uncaught exception:', err);
   process.exit(1);
 });

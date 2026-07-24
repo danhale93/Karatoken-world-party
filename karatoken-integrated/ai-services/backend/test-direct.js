@@ -6,13 +6,13 @@ console.log('1 + 1 =', 1 + 1);
 try {
   const express = require('express');
   console.log('Express version:', express.version);
-  
+
   const jest = require('jest');
   console.log('Jest is available');
-  
+
   const ts = require('typescript');
   console.log('TypeScript version:', ts.version);
-  
+
   console.log('\n✅ Basic test passed!');
   process.exit(0);
 } catch (error) {

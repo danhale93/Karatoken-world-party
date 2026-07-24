@@ -52,5 +52,8 @@ module.exports = {
     '**/*.spec.ts',
     '**/__mocks__/*',
     '**/__tests__/*',
+    '*.js',
+    'routes/**',
+    'services/**',
   ],
 };
