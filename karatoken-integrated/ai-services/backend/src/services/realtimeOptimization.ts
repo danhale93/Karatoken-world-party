@@ -115,8 +115,10 @@ export class AudioProcessor {
 
       // Process in chunks
       for (let i = 0; i < channelData.length; i += chunkSize) {
-        const chunk = channelData.slice(i, i + chunkSize);
-        let processedChunk = new Float32Array(chunk);
+        // ⚡ Bolt Optimization: Use .subarray() instead of .slice() to avoid data copy allocation,
+        // and reuse the subarray reference without allocating a redundant new Float32Array wrapper.
+        const chunk = channelData.subarray(i, i + chunkSize);
+        let processedChunk = chunk;
 
         // Apply effects in sequence
         for (const effect of effects) {
