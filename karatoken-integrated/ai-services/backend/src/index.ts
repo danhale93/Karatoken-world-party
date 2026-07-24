@@ -23,6 +23,7 @@ const PROJECT_ROOT = path.resolve(__dirname, '../../../../karatoken-integrated')
 const WEB_DIR = path.join(PROJECT_ROOT, 'web');
 
 if (fs.existsSync(WEB_DIR)) {
+  // eslint-disable-next-line no-console
   console.log('Serving static web from:', WEB_DIR);
   app.use('/', express.static(WEB_DIR));
   // Fallback for root to ensure index.html is served
@@ -37,6 +38,7 @@ if (fs.existsSync(WEB_DIR)) {
 const TMP_DIR = path.resolve(process.cwd(), 'tmp');
 if (!fs.existsSync(TMP_DIR)) fs.mkdirSync(TMP_DIR, { recursive: true });
 app.use('/tmp', express.static(TMP_DIR));
+// eslint-disable-next-line no-console
 console.log('Exposing tmp files from:', TMP_DIR);
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -86,6 +88,7 @@ app.get('/api/spotify/callback', (req: Request, res: Response) => {
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
+    // eslint-disable-next-line no-console
     console.log(`Backend listening on port ${PORT}`);
   });
 }
