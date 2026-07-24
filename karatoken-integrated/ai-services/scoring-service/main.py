@@ -39,13 +39,13 @@ def analyze_pitch(audio_data: np.ndarray, sr: int) -> dict:
     # Get pitch using librosa's piptrack
     pitches, magnitudes = librosa.piptrack(y=audio_data, sr=sr)
     
-    # ⚡ Bolt Optimization: Vectorize frame-by-frame loop to avoid extreme Python interpreter and copying overhead
-    # Find the index of max magnitude for each frame
-    indices = np.argmax(magnitudes, axis=0)
-    # Extract corresponding pitch values using advanced indexing
-    pitch_at_max = pitches[indices, np.arange(pitches.shape[1])]
-    # Filter out silent frames and convert to native floats list
-    pitch_values = pitch_at_max[pitch_at_max > 0].tolist()
+    # Get the pitch values that exceed a certain magnitude threshold
+    pitch_values = []
+    for t in range(pitches.shape[1]):
+        index = magnitudes[:, t].argmax()
+        pitch = pitches[index, t]
+        if pitch > 0:  # Filter out silent frames
+            pitch_values.append(pitch)
     
     return {
         'average_pitch': float(np.mean(pitches[pitches > 0])) if len(pitches[pitches > 0]) > 0 else 0,
