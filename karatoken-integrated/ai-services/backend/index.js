@@ -52,7 +52,7 @@ app.get('/dl/*', (req, res) => {
   try {
     const rel = req.params[0] || '';
     const filePath = safeJoin(TMP_DIR, rel);
-    return res.download(filePath, path.basename(filePath), (err) => {
+    return res.download(filePath, path.basename(filePath), err => {
       if (err) {
         if (!res.headersSent) res.status(404).json({ ok: false, error: 'File not found' });
       }
@@ -84,4 +84,3 @@ app.listen(PORT, () => {
   // Important: match VS Code problemMatcher begins/ends pattern
   console.log(`Backend listening on port ${PORT}`);
 });
-

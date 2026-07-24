@@ -1,7 +1,7 @@
 import { analyzeEmotion } from '../../services/emotionAnalysis';
 
 // Mock the transformers pipeline
-jest.mock('transformers', () => ({
+jest.mock('@xenova/transformers', () => ({
   pipeline: jest.fn().mockResolvedValue(async (text: string) => {
     // Mock response based on input text
     if (text.includes('happy')) {
@@ -12,7 +12,7 @@ jest.mock('transformers', () => ({
       return [{ label: 'anger', score: 0.88 }];
     }
     return [{ label: 'neutral', score: 0.5 }];
-  })
+  }),
 }));
 
 describe('Emotion Analysis Service', () => {

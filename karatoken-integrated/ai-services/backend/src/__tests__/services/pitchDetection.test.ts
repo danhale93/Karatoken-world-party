@@ -17,7 +17,7 @@ describe('Pitch Detection Service', () => {
       },
       numberOfChannels: 1,
     };
-    return (audioBuffer as unknown) as AudioBuffer;
+    return audioBuffer as unknown as AudioBuffer;
   };
 
   describe('detectPitch', () => {
@@ -25,12 +25,12 @@ describe('Pitch Detection Service', () => {
       const sampleRate = 44100;
       const testFreq = 440; // A4 note
       const audioBuffer = createMockAudioBuffer(sampleRate, sampleRate, testFreq);
-      
+
       const pitches = detectPitch(audioBuffer);
-      
+
       // Should have detected pitch for each analysis window
       expect(pitches.length).toBeGreaterThan(0);
-      
+
       // The detected pitch should be close to the test frequency
       const avgPitch = pitches.reduce((a, b) => a + b, 0) / pitches.length;
       expect(avgPitch).toBeCloseTo(testFreq, -1); // Within 10Hz
@@ -44,7 +44,7 @@ describe('Pitch Detection Service', () => {
         getChannelData: () => new Float32Array(44100), // Silent
         numberOfChannels: 1,
       } as unknown as AudioBuffer;
-      
+
       const pitches = detectPitch(audioBuffer);
       expect(pitches.every(p => p === 0)).toBe(true);
     });
@@ -53,10 +53,10 @@ describe('Pitch Detection Service', () => {
   describe('analyzePitch', () => {
     it('should analyze pitch data and return metrics', () => {
       // Create pitch data that goes from 220Hz to 440Hz
-      const pitchData = Array.from({ length: 100 }, (_, i) => 220 + (i * 2.2));
-      
+      const pitchData = Array.from({ length: 100 }, (_, i) => 220 + i * 2.2);
+
       const analysis = analyzePitch(pitchData);
-      
+
       expect(analysis.averagePitch).toBeCloseTo(330, -1);
       expect(analysis.minPitch).toBeCloseTo(220, -1);
       expect(analysis.maxPitch).toBeCloseTo(440, -1);
@@ -66,7 +66,7 @@ describe('Pitch Detection Service', () => {
 
     it('should handle empty pitch data', () => {
       const analysis = analyzePitch([]);
-      
+
       expect(analysis.averagePitch).toBe(0);
       expect(analysis.minPitch).toBe(0);
       expect(analysis.maxPitch).toBe(0);

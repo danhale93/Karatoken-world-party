@@ -49,3 +49,39 @@ test('safeJoin correctly rejects malicious traversals and prefix-bypass', () => 
   const validPath = testSafeJoin(base, 'genre_swap_123_rock.mp3');
   assert.ok(validPath.startsWith(path.resolve(base)));
 });
+
+// Test genre validation
+test('Genre validation rejects directory traversal and malicious inputs', () => {
+  const isValidGenre = (genre) => {
+    return typeof genre === 'string' && /^[a-zA-Z0-9\s_-]+$/.test(genre);
+  };
+
+  const maliciousGenres = [
+    '../../etc/passwd',
+    '..\\..\\Windows\\win.ini',
+    'somegenre/../other',
+    'genre; rm -rf /',
+    'genre && touch hit',
+    'genre\0',
+    '',
+    null,
+    undefined,
+    123
+  ];
+
+  const validGenres = [
+    'Rock',
+    'pop-rock',
+    'hip_hop',
+    'Synthwave 80s',
+    'Electronic'
+  ];
+
+  for (const genre of maliciousGenres) {
+    assert.strictEqual(isValidGenre(genre), false, `Genre '${genre}' should be rejected as invalid`);
+  }
+
+  for (const genre of validGenres) {
+    assert.strictEqual(isValidGenre(genre), true, `Genre '${genre}' should be accepted as valid`);
+  }
+});

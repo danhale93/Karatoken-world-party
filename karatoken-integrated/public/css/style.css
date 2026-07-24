@@ -346,3 +346,24 @@ audio {
         margin-bottom: 0.5rem;
     }
 }
+
+/* Focus Visible Styles for Accessible Keyboard Navigation */
+button:focus-visible,
+.btn:focus-visible,
+a:focus-visible,
+.nav-link:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid #0d6efd !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+button:focus:not(:focus-visible),
+.btn:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+.nav-link:focus:not(:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
+}

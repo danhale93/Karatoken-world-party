@@ -4,13 +4,13 @@ import app from '../index';
 
 describe('GET /health', () => {
   let server: any;
-  
-  beforeAll((done) => {
+
+  beforeAll(done => {
     server = createServer(app);
     server.listen(0, () => done()); // Use random available port
   });
 
-  afterAll((done) => {
+  afterAll(done => {
     server.close(done);
   });
 
@@ -20,7 +20,7 @@ describe('GET /health', () => {
     expect(response.body).toMatchObject({
       status: 'ok',
       service: 'karatoken-backend',
-      time: expect.any(String)
+      time: expect.any(String),
     });
   });
 });
