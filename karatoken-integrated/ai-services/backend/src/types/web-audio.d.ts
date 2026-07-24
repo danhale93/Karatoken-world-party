@@ -3,11 +3,7 @@ declare module 'web-audio-api' {
   export class AudioContext {
     sampleRate: number;
     createBufferSource(): AudioBufferSourceNode;
-    createBuffer(
-      numberOfChannels: number,
-      length: number,
-      sampleRate: number
-    ): AudioBuffer;
+    createBuffer(numberOfChannels: number, length: number, sampleRate: number): AudioBuffer;
     createAnalyser(): AnalyserNode;
     createGain(): GainNode;
     createBiquadFilter(): BiquadFilterNode;
@@ -23,11 +19,7 @@ declare module 'web-audio-api' {
   }
 
   export class OfflineAudioContext extends AudioContext {
-    constructor(
-      numberOfChannels: number,
-      length: number,
-      sampleRate: number
-    );
+    constructor(numberOfChannels: number, length: number, sampleRate: number);
     startRendering(): Promise<AudioBuffer>;
   }
 
@@ -42,11 +34,7 @@ declare module 'web-audio-api' {
       channelNumber: number,
       startInChannel?: number
     ): void;
-    copyToChannel(
-      source: Float32Array,
-      channelNumber: number,
-      startInChannel?: number
-    ): void;
+    copyToChannel(source: Float32Array, channelNumber: number, startInChannel?: number): void;
   }
 
   export interface AudioNode {
@@ -81,11 +69,7 @@ declare module 'web-audio-api' {
     setValueAtTime(value: number, startTime: number): AudioParam;
     linearRampToValueAtTime(value: number, endTime: number): AudioParam;
     exponentialRampToValueAtTime(value: number, endTime: number): AudioParam;
-    setTargetAtTime(
-      target: number,
-      startTime: number,
-      timeConstant: number
-    ): AudioParam;
+    setTargetAtTime(target: number, startTime: number, timeConstant: number): AudioParam;
   }
 
   export interface AnalyserNode extends AudioNode {

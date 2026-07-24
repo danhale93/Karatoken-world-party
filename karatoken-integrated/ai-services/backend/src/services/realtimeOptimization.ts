@@ -138,7 +138,7 @@ export class AudioProcessor {
 
     return result;
   }
-  
+
   private async applyEffect(audioData: Float32Array, effect: AudioEffect): Promise<Float32Array> {
     switch (effect.type) {
       case 'pitchShift': {
@@ -305,7 +305,7 @@ export class AudioProcessor {
         result[i] = audioData[i];
       }
     }
-    
+
     return result;
   }
 }

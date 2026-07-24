@@ -21,7 +21,8 @@ const router = express.Router();
 
 // Use modern browser-like headers to avoid YouTube blocking and signature issues
 const DEFAULT_HEADERS = {
-  'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'user-agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
   'accept-language': 'en-US,en;q=0.9',
 };
 
@@ -32,8 +33,8 @@ router.get('/search', async (req, res) => {
   try {
     const search = await ytsr(q, { limit: 10 });
     const videos = (search.items || [])
-      .filter((it) => it.type === 'video')
-      .map((v) => ({
+      .filter(it => it.type === 'video')
+      .map(v => ({
         id: v.id,
         title: v.title,
         url: v.url,
@@ -51,7 +52,7 @@ router.get('/search', async (req, res) => {
 // Downloads best audio to tmp and returns file path
 router.post('/download', async (req, res) => {
   try {
-    const url = (req.body && req.body.url) ? String(req.body.url) : '';
+    const url = req.body && req.body.url ? String(req.body.url) : '';
     if (!url || !ytdl.validateURL(url)) {
       return res.status(400).json({ ok: false, error: 'Invalid YouTube URL' });
     }
@@ -64,7 +65,10 @@ router.post('/download', async (req, res) => {
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
     const outPath = path.join(outDir, `${titleSafe}-${Date.now()}.mp3`);
 
-    const stream = ytdl(url, { quality: 'highestaudio', requestOptions: { headers: DEFAULT_HEADERS } });
+    const stream = ytdl(url, {
+      quality: 'highestaudio',
+      requestOptions: { headers: DEFAULT_HEADERS },
+    });
 
     // If ffmpeg is available, you could transcode to mp3; as a simple start, just pipe as-is (may be webm).
     // For now, write the stream raw and use .webm extension; then we can add ffmpeg later.
@@ -79,12 +83,21 @@ router.post('/download', async (req, res) => {
     });
 
     const fileUrl = `/tmp/${path.basename(tmpPath)}`;
-    return res.json({ ok: true, file: tmpPath, url: fileUrl, title: info.videoDetails.title, id: info.videoDetails.videoId });
+    return res.json({
+      ok: true,
+      file: tmpPath,
+      url: fileUrl,
+      title: info.videoDetails.title,
+      id: info.videoDetails.videoId,
+    });
   } catch (e) {
     // Surface a clearer message for common ytdl-core failures
-    const msg = (e && e.message) ? e.message : String(e);
+    const msg = e && e.message ? e.message : String(e);
     if (/Could not extract functions/i.test(msg) || /signature/i.test(msg)) {
-      return res.status(500).json({ ok: false, error: 'YouTube changed its player. Try updating ytdl-core to latest.' });
+      return res.status(500).json({
+        ok: false,
+        error: 'YouTube changed its player. Try updating ytdl-core to latest.',
+      });
     }
     return res.status(500).json({ ok: false, error: msg });
   }

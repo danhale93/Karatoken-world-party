@@ -11,7 +11,7 @@ jest.mock('whisper-node', () => ({
       throw new Error('Audio file not found');
     }
     return '1\n00:00:00,000 --> 00:00:05,000\nThis is a test transcription\n';
-  })
+  }),
 }));
 
 describe('Whisper Transcription Service', () => {
@@ -23,7 +23,7 @@ describe('Whisper Transcription Service', () => {
     if (!fs.existsSync(testDir)) {
       fs.mkdirSync(testDir, { recursive: true });
     }
-    
+
     // Create a small test audio file
     if (!fs.existsSync(testAudioPath)) {
       fs.writeFileSync(testAudioPath, Buffer.alloc(1024)); // 1KB dummy audio file

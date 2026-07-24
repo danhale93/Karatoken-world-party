@@ -1,11 +1,15 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 const ffmpegInstaller = (() => {
-  try { return require("@ffmpeg-installer/ffmpeg"); } catch { return null; }
+  try {
+    return require('@ffmpeg-installer/ffmpeg');
+  } catch {
+    return null;
+  }
 })();
 let ffmpeg;
 try {
-  ffmpeg = require("fluent-ffmpeg");
+  ffmpeg = require('fluent-ffmpeg');
   if (ffmpegInstaller && ffmpegInstaller.path) {
     ffmpeg.setFfmpegPath(ffmpegInstaller.path);
   }
@@ -21,11 +25,18 @@ function ensureDir(dir) {
  * Mix vocals over backing using ffmpeg's amix and simple volume controls.
  * Returns the outPath if successful.
  */
-async function remixTracks({ vocalsPath, backingPath, outPath, vocalsGainDb = -2, backingGainDb = 0 }) {
-  if (!ffmpeg) throw new Error("ffmpeg not available (install fluent-ffmpeg and @ffmpeg-installer/ffmpeg)");
-  if (!backingPath || !fs.existsSync(backingPath)) throw new Error("backingPath missing");
+async function remixTracks({
+  vocalsPath,
+  backingPath,
+  outPath,
+  vocalsGainDb = -2,
+  backingGainDb = 0,
+}) {
+  if (!ffmpeg)
+    throw new Error('ffmpeg not available (install fluent-ffmpeg and @ffmpeg-installer/ffmpeg)');
+  if (!backingPath || !fs.existsSync(backingPath)) throw new Error('backingPath missing');
   const hasVocals = vocalsPath && fs.existsSync(vocalsPath);
-  const finalOut = outPath || path.join(path.dirname(backingPath), "genre_mix.wav");
+  const finalOut = outPath || path.join(path.dirname(backingPath), 'genre_mix.wav');
   ensureDir(path.dirname(finalOut));
 
   if (!hasVocals) {
@@ -39,24 +50,24 @@ async function remixTracks({ vocalsPath, backingPath, outPath, vocalsGainDb = -2
       .input(vocalsPath)
       .input(backingPath)
       .audioFilters([
-        { filter: "volume", options: `${Math.pow(10, vocalsGainDb / 20)}` },
-        { filter: "adelay", options: "0|0" }, // no delay by default, extend later for alignment
+        { filter: 'volume', options: `${Math.pow(10, vocalsGainDb / 20)}` },
+        { filter: 'adelay', options: '0|0' }, // no delay by default, extend later for alignment
       ])
       .complexFilter([
         // Stream 0 is vocals, 1 is backing; apply per-stream volumes via asplit not trivial here
         // Simpler approach: use amix and set dropouts/normalize off
         {
-          filter: "amix",
+          filter: 'amix',
           options: {
             inputs: 2,
             normalize: 0,
           },
         },
-        { filter: "volume", options: `${Math.pow(10, backingGainDb / 20)}` },
+        { filter: 'volume', options: `${Math.pow(10, backingGainDb / 20)}` },
       ])
-      .outputOptions(["-ac", "2", "-ar", "44100"])
-      .on("end", resolve)
-      .on("error", reject)
+      .outputOptions(['-ac', '2', '-ar', '44100'])
+      .on('end', resolve)
+      .on('error', reject)
       .save(finalOut);
   });
 

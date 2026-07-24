@@ -56,7 +56,7 @@ app.get('/dl/*', (req: Request, res: Response) => {
   try {
     const rel = req.params[0] || '';
     const filePath = safeJoin(TMP_DIR, rel);
-    return res.download(filePath, path.basename(filePath), (err) => {
+    return res.download(filePath, path.basename(filePath), err => {
       if (err) {
         if (!res.headersSent) res.status(404).json({ ok: false, error: 'File not found' });
       }
