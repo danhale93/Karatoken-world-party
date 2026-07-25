@@ -4,6 +4,7 @@ process.env.PORT = '0'; // Use random port for tests
 
 // Polyfill global File for Node.js < 20 (required by undici / @distube/ytdl-core in tests)
 if (typeof globalThis.File === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { File } = require('node:buffer');
   globalThis.File = File;
 }
