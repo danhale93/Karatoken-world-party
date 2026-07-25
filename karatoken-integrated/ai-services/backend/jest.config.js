@@ -9,13 +9,13 @@ module.exports = {
     '!src/__tests__/**/*',
     '!src/services/pitchDetection.ts',
     '!src/services/realtimeOptimization.ts',
-    '!src/services/whisper.ts'
+    '!src/services/whisper.ts',
   ],
   testPathIgnorePatterns: [
     '/node_modules/',
     '<rootDir>/src/__tests__/services/pitchDetection.test.ts',
     '<rootDir>/src/__tests__/services/realtimeOptimization.test.ts',
-    '<rootDir>/src/__tests__/services/whisper.test.ts'
+    '<rootDir>/src/__tests__/services/whisper.test.ts',
   ],
   coverageThreshold: {
     global: {
