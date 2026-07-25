@@ -1,6 +1,26 @@
 import { detectPitch, analyzePitch } from '../../services/pitchDetection';
 import { AudioBuffer } from 'web-audio-api';
 
+// Mock pitchy ESM module
+jest.mock('pitchy', () => {
+  return {
+    PitchDetector: {
+      forFloat32Array: jest.fn().mockReturnValue({
+        findPitch: jest.fn().mockImplementation((chunk, sampleRate) => {
+          let isSilent = true;
+          for (let i = 0; i < chunk.length; i++) {
+            if (Math.abs(chunk[i]) > 1e-4) {
+              isSilent = false;
+              break;
+            }
+          }
+          return isSilent ? [0, 0] : [440, 0.9];
+        })
+      })
+    }
+  };
+});
+
 describe('Pitch Detection Service', () => {
   // Create a mock AudioBuffer
   const createMockAudioBuffer = (sampleRate: number, length: number, frequency: number) => {
