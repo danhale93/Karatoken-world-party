@@ -105,6 +105,10 @@ export class AudioProcessor {
   }
 
   async process(audioBuffer: AudioBuffer, options: ProcessOptions = {}): Promise<Float32Array[]> {
+    if (audioBuffer.length === 0) {
+      return [];
+    }
+
     const { onProgress, chunkSize = this.config.bufferSize, effects = [] } = options;
     const result: Float32Array[] = [];
 
@@ -189,12 +193,10 @@ export class AudioProcessor {
     const rate = Math.pow(2, params.semitones / 12);
     const inputTensor = tf.tensor2d([audioData]);
 
-    // Simple resampling using TensorFlow
+    // Simple resampling using TensorFlow (size parameter must be 2D)
     const resized = tf.image.resizeBilinear(inputTensor.reshape([1, -1, 1, 1]), [
       1,
       Math.floor(audioData.length / rate),
-      1,
-      1,
     ]);
 
     const result = (await resized.reshape([-1]).array()) as number[];
