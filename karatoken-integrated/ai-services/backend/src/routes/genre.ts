@@ -128,6 +128,10 @@ async function runGenreSwap(job: Job) {
 
     if (isLocalFile) {
       localAudioPath = path.resolve(process.cwd(), audioUrl);
+      const relative = path.relative(process.cwd(), localAudioPath);
+      if (relative.startsWith('..') || path.isAbsolute(relative)) {
+        throw new Error('Access denied: Invalid local file path');
+      }
       if (!fs.existsSync(localAudioPath)) {
         throw new Error(`Local file not found: ${audioUrl}`);
       }
@@ -196,6 +200,11 @@ const validateInput: RequestHandler = (req, res, next) => {
   }
   if (!targetGenre || typeof targetGenre !== 'string') {
     return res.status(400).json({ ok: false, error: 'Invalid targetGenre' });
+  }
+
+  // Validate targetGenre characters to prevent command injection, traversal, or special characters injection
+  if (!/^[a-zA-Z0-9\s_-]+$/.test(targetGenre)) {
+    return res.status(400).json({ ok: false, error: 'Invalid targetGenre format' });
   }
 
   next();

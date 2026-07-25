@@ -45,6 +45,44 @@ describe('Genre Swap API', () => {
       expect(response.body).toHaveProperty('ok', false);
       expect(response.body).toHaveProperty('error');
     });
+
+    it('should return 400 for invalid targetGenre containing unsafe characters', async () => {
+      const response = await request(server).post('/api/genre/swap').send({
+        audioUrl: testAudioPath,
+        targetGenre: 'rock; rm -rf /',
+        karaokeMode: true,
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('ok', false);
+      expect(response.body).toHaveProperty('error', 'Invalid targetGenre format');
+    });
+
+    it('should fail the job with Access denied for path traversal audioUrl', async () => {
+      const createResponse = await request(server).post('/api/genre/swap').send({
+        audioUrl: '../../../../etc/passwd',
+        targetGenre: 'rock',
+        karaokeMode: true,
+      });
+
+      expect(createResponse.status).toBe(200);
+      const { jobId } = createResponse.body;
+
+      // Poll until status is failed (up to 2000ms)
+      let statusResponse;
+      for (let i = 0; i < 30; i++) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        statusResponse = await request(server).get(`/api/genre/status/${jobId}`);
+        if (statusResponse.body.job.status === 'failed') {
+          break;
+        }
+      }
+
+      expect(statusResponse).toBeDefined();
+      expect(statusResponse!.status).toBe(200);
+      expect(statusResponse!.body.job.status).toBe('failed');
+      expect(statusResponse!.body.job.error).toContain('Access denied');
+    });
   });
 
   describe('GET /api/genre/status/:jobId', () => {
