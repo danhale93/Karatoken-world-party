@@ -105,6 +105,10 @@ export class AudioProcessor {
   }
 
   async process(audioBuffer: AudioBuffer, options: ProcessOptions = {}): Promise<Float32Array[]> {
+    if (audioBuffer.length === 0) {
+      return [];
+    }
+
     const { onProgress, chunkSize = this.config.bufferSize, effects = [] } = options;
     const result: Float32Array[] = [];
 
@@ -115,16 +119,20 @@ export class AudioProcessor {
 
       // Process in chunks
       for (let i = 0; i < channelData.length; i += chunkSize) {
-        const chunk = channelData.slice(i, i + chunkSize);
-        let processedChunk = new Float32Array(chunk);
+        // ⚡ Bolt Optimization: Use .subarray() to create a zero-allocation view of the chunk
+        const chunk = channelData.subarray(i, i + chunkSize);
+        // Create an independent Float32Array copy to satisfy TypeScript types and protect against tfjs buffer-sharing issues
+        const processedChunk: Float32Array = new Float32Array(chunk.length);
+        processedChunk.set(chunk);
 
         // Apply effects in sequence
+        let currentChunk: Float32Array = processedChunk;
         for (const effect of effects) {
-          processedChunk = await this.applyEffect(processedChunk, effect);
+          currentChunk = await this.applyEffect(currentChunk, effect);
         }
 
         // Copy processed chunk to result
-        processedChannel.set(processedChunk, i);
+        processedChannel.set(currentChunk, i);
 
         // Report progress
         if (onProgress) {
@@ -185,12 +193,10 @@ export class AudioProcessor {
     const rate = Math.pow(2, params.semitones / 12);
     const inputTensor = tf.tensor2d([audioData]);
 
-    // Simple resampling using TensorFlow
+    // Simple resampling using TensorFlow (size parameter must be 2D)
     const resized = tf.image.resizeBilinear(inputTensor.reshape([1, -1, 1, 1]), [
       1,
       Math.floor(audioData.length / rate),
-      1,
-      1,
     ]);
 
     const result = (await resized.reshape([-1]).array()) as number[];

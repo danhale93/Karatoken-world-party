@@ -5,3 +5,7 @@
 ## 2025-08-22 - Vectorizing Audio Chunk Processing in Python NumPy
 **Learning:** Running an interpreted frame-by-frame python loop to find pitch of each chunk via librosa/numpy introduces extreme overhead. Vectorizing with `np.argmax(..., axis=0)` and advanced indexing operates completely in fast C memory.
 **Action:** Avoid Python loops when processing multi-frame matrices. Use numpy's vectorization features.
+
+## 2026-07-25 - Subarray Buffer Sharing Side Effects with TensorFlow.js Tensors
+**Learning:** When passing a `.subarray()` view of a typed array to TensorFlow.js (e.g. `tf.tensor2d`), TF.js ignores the offset/length of the view and reads the *entire underlying ArrayBuffer*. This causes massive data size mismatch and correctness bugs when processing audio chunks.
+**Action:** Always construct a new independent TypedArray copy (`new Float32Array(subarray.length)` and then `.set(subarray)`) before passing chunk data to TensorFlow.js tensors to ensure memory isolation and correctness.
