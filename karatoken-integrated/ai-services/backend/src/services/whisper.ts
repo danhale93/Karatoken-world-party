@@ -1,9 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { promisify } from 'util';
 import { whisper } from 'whisper-node';
-
-const writeFile = promisify(fs.writeFile);
 
 interface TranscriptionOptions {
   model?: string;

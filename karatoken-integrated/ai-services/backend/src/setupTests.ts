@@ -1,11 +1,12 @@
+import { File as BufferFile } from 'node:buffer';
+
 // Setup test environment variables
 process.env.NODE_ENV = 'test';
 process.env.PORT = '0'; // Use random port for tests
 
 // Polyfill global File for Node.js < 20 (required by undici / @distube/ytdl-core in tests)
 if (typeof globalThis.File === 'undefined') {
-  const { File } = require('node:buffer');
-  globalThis.File = File;
+  globalThis.File = BufferFile as any;
 }
 
 // Mock any global dependencies if needed
