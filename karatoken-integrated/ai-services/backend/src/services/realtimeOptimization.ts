@@ -115,17 +115,20 @@ export class AudioProcessor {
 
       // Process in chunks
       for (let i = 0; i < channelData.length; i += chunkSize) {
-        // ⚡ Bolt Optimization: Use .subarray() instead of .slice() to avoid data copy allocation overhead
+        // ⚡ Bolt Optimization: Use .subarray() to create a zero-allocation view of the chunk
         const chunk = channelData.subarray(i, i + chunkSize);
-        let processedChunk = new Float32Array(chunk);
+        // Create an independent Float32Array copy to satisfy TypeScript types and protect against tfjs buffer-sharing issues
+        const processedChunk: Float32Array = new Float32Array(chunk.length);
+        processedChunk.set(chunk);
 
         // Apply effects in sequence
+        let currentChunk: Float32Array = processedChunk;
         for (const effect of effects) {
-          processedChunk = await this.applyEffect(processedChunk, effect);
+          currentChunk = await this.applyEffect(currentChunk, effect);
         }
 
         // Copy processed chunk to result
-        processedChannel.set(processedChunk, i);
+        processedChannel.set(currentChunk, i);
 
         // Report progress
         if (onProgress) {
