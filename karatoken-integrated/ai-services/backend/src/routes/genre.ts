@@ -128,6 +128,11 @@ async function runGenreSwap(job: Job) {
 
     if (isLocalFile) {
       localAudioPath = path.resolve(process.cwd(), audioUrl);
+      // Ensure the resolved path remains within the project directory to prevent path traversal
+      const relative = path.relative(process.cwd(), localAudioPath);
+      if (relative.startsWith('..') || path.isAbsolute(relative)) {
+        throw new Error('Access denied: Invalid file path');
+      }
       if (!fs.existsSync(localAudioPath)) {
         throw new Error(`Local file not found: ${audioUrl}`);
       }
