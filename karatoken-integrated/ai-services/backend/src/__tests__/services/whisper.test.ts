@@ -11,7 +11,10 @@ jest.mock('whisper-node', () => ({
       throw new Error('Audio file not found');
     }
     if (options && options.output) {
-      fs.writeFileSync(options.output, '1\n00:00:00,000 --> 00:00:05,000\nThis is a test transcription\n');
+      fs.writeFileSync(
+        options.output,
+        '1\n00:00:00,000 --> 00:00:05,000\nThis is a test transcription\n'
+      );
     }
     return Promise.resolve();
   }),
