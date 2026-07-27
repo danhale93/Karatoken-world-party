@@ -129,6 +129,8 @@ describe('Pitch Detection Performance and Correctness Benchmark', () => {
     expect(resultOptimized.pitchRange).toBe(0);
     expect(resultOptimized.pitchStability).toBe(0);
 
-    console.log(`Optimized implementation processed ${criticalDatasetSize} values in ${(end - start).toFixed(3)} ms without crashing!`);
+    console.log(
+      `Optimized implementation processed ${criticalDatasetSize} values in ${(end - start).toFixed(3)} ms without crashing!`
+    );
   });
 });
