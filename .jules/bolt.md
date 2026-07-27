@@ -9,3 +9,7 @@
 ## 2026-07-25 - Subarray Buffer Sharing Side Effects with TensorFlow.js Tensors
 **Learning:** When passing a `.subarray()` view of a typed array to TensorFlow.js (e.g. `tf.tensor2d`), TF.js ignores the offset/length of the view and reads the *entire underlying ArrayBuffer*. This causes massive data size mismatch and correctness bugs when processing audio chunks.
 **Action:** Always construct a new independent TypedArray copy (`new Float32Array(subarray.length)` and then `.set(subarray)`) before passing chunk data to TensorFlow.js tensors to ensure memory isolation and correctness.
+
+## 2026-07-26 - Single/Double-Pass Iterative Array Calculation vs. Multi-Pass Allocations and Spreading
+**Learning:** Performing multiple passes (`filter`, `map`, `reduce`) over potentially massive arrays of numbers (like audio pitch data) causes high Garbage Collection pressure and performance degradation. Worse, using the spread operator (`...`) with `Math.min` or `Math.max` on large arrays can exceed the JS engine call stack size limit, causing the application to crash with `Maximum call stack size exceeded`.
+**Action:** Always use simple, zero-allocation iterative loops to compute statistics (sum, min, max, count, standard deviation) in a single or double pass, avoiding array allocation methods and spread operators on datasets of arbitrary size.
