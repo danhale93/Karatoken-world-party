@@ -118,6 +118,16 @@
     }
   }
 
+  function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function formatDuration(seconds) {
     if (!seconds) return '';
     const mins = Math.floor(seconds / 60);
@@ -130,14 +140,14 @@
     div.className = 'video-result';
     div.innerHTML = `
       <div class="video-thumbnail">
-        <img src="${video.thumbnail}" alt="${video.title}" loading="lazy">
-        <span class="duration">${formatDuration(video.duration)}</span>
+        <img src="${escapeHTML(video.thumbnail)}" alt="${escapeHTML(video.title)}" loading="lazy">
+        <span class="duration">${escapeHTML(formatDuration(video.duration))}</span>
       </div>
       <div class="video-details">
-        <h4 class="video-title">${video.title}</h4>
+        <h4 class="video-title">${escapeHTML(video.title)}</h4>
         <div class="video-meta">
-          <span class="channel">${video.channel || 'Unknown'}</span>
-          <span class="duration">${formatDuration(video.duration)}</span>
+          <span class="channel">${escapeHTML(video.channel || 'Unknown')}</span>
+          <span class="duration">${escapeHTML(formatDuration(video.duration))}</span>
         </div>
       </div>
     `;
@@ -161,7 +171,7 @@
     ytSearchOut.innerHTML = `
       <div class="search-status">
         <div class="spinner"></div>
-        <span>Searching YouTube for "${q}"...</span>
+        <span>Searching YouTube for "${escapeHTML(q)}"...</span>
       </div>
     `;
 
@@ -176,7 +186,7 @@
       if (!data.items || data.items.length === 0) {
         ytSearchOut.innerHTML = `
           <div class="no-results">
-            No videos found for "${q}"
+            No videos found for "${escapeHTML(q)}"
             <button class="retry-btn" id="retry-search">Try again</button>
           </div>
         `;
@@ -204,7 +214,7 @@
       console.error('YouTube search error:', error);
       ytSearchOut.innerHTML = `
         <div class="error">
-          Error: ${error.message || 'Failed to search YouTube'}
+          Error: ${escapeHTML(error.message || 'Failed to search YouTube')}
           <button class="retry-btn" id="retry-search">Retry</button>
         </div>
       `;
@@ -277,7 +287,7 @@
       console.error('Download error:', error);
       ytDlOut.innerHTML = `
         <div class="error">
-          <span>Error: ${error.message || 'Failed to download video'}</span>
+          <span>Error: ${escapeHTML(error.message || 'Failed to download video')}</span>
           <button class="retry-btn" id="retry-download">Retry</button>
         </div>
       `;
@@ -364,19 +374,19 @@
           const lrcDl = toDlUrl(lrcUrl);
           // Render clickable links to outputs
           const lines = [];
-          lines.push(`<div><strong>Status:</strong> ${job.status} (${job.progress}%)</div>`);
+          lines.push(`<div><strong>Status:</strong> ${escapeHTML(job.status)} (${job.progress}%)</div>`);
           if (outUrl) {
             if (outDl) {
-              lines.push(`<div><a href="${outDl}" download="${outName}">Download Output</a> <small><a href="${outUrl}" target="_blank" rel="noopener">(open)</a></small></div>`);
+              lines.push(`<div><a href="${escapeHTML(outDl)}" download="${escapeHTML(outName)}">Download Output</a> <small><a href="${escapeHTML(outUrl)}" target="_blank" rel="noopener">(open)</a></small></div>`);
             } else {
-              lines.push(`<div><a href="${outUrl}" download="${outName}" target="_blank" rel="noopener">Download Output</a></div>`);
+              lines.push(`<div><a href="${escapeHTML(outUrl)}" download="${escapeHTML(outName)}" target="_blank" rel="noopener">Download Output</a></div>`);
             }
           }
           if (lrcUrl) {
             if (lrcDl) {
-              lines.push(`<div><a href="${lrcDl}" download="${lrcName}">Download LRC</a> <small><a href="${lrcUrl}" target="_blank" rel="noopener">(open)</a></small></div>`);
+              lines.push(`<div><a href="${escapeHTML(lrcDl)}" download="${escapeHTML(lrcName)}">Download LRC</a> <small><a href="${escapeHTML(lrcUrl)}" target="_blank" rel="noopener">(open)</a></small></div>`);
             } else {
-              lines.push(`<div><a href="${lrcUrl}" download="${lrcName}" target="_blank" rel="noopener">Download LRC</a></div>`);
+              lines.push(`<div><a href="${escapeHTML(lrcUrl)}" download="${escapeHTML(lrcName)}" target="_blank" rel="noopener">Download LRC</a></div>`);
             }
           }
           genreSwapOut.innerHTML = lines.join('\n');

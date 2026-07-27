@@ -113,6 +113,16 @@ class USDBSearch {
         }
     }
 
+    escapeHTML(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     displayResults(songs) {
         if (!songs || songs.length === 0) {
             this.resultsContainer.innerHTML = `
@@ -126,14 +136,14 @@ class USDBSearch {
         let html = '<div class="list-group">';
         songs.forEach(song => {
             html += `
-                <a href="#" class="list-group-item list-group-item-action" data-song-id="${song.id}">
+                <a href="#" class="list-group-item list-group-item-action" data-song-id="${this.escapeHTML(song.id)}">
                     <div class="d-flex w-100 justify-content-between">
-                        <h6 class="mb-1">${song.title}</h6>
-                        <small>${song.year || 'N/A'}</small>
+                        <h6 class="mb-1">${this.escapeHTML(song.title)}</h6>
+                        <small>${this.escapeHTML(song.year || 'N/A')}</small>
                     </div>
-                    <p class="mb-1">${song.artist}</p>
+                    <p class="mb-1">${this.escapeHTML(song.artist)}</p>
                     <small class="text-muted">
-                        ${song.genre || 'Unknown genre'} • ${song.language || 'Unknown language'}
+                        ${this.escapeHTML(song.genre || 'Unknown genre')} • ${this.escapeHTML(song.language || 'Unknown language')}
                     </small>
                 </a>
             `;
