@@ -203,6 +203,11 @@ const validateInput: RequestHandler = (req, res, next) => {
     return res.status(400).json({ ok: false, error: 'Invalid targetGenre' });
   }
 
+  // Validate targetGenre characters to prevent command injection, traversal, or special characters injection
+  if (!/^[a-zA-Z0-9\s_-]+$/.test(targetGenre)) {
+    return res.status(400).json({ ok: false, error: 'Invalid targetGenre format' });
+  }
+
   next();
 };
 
