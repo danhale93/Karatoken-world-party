@@ -43,7 +43,12 @@ function safeJoin(base, target) {
   const resolvedBase = path.resolve(base);
   const resolvedTarget = path.resolve(resolvedBase, target);
   const relative = path.relative(resolvedBase, resolvedTarget);
-  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+  if (
+    relative.startsWith('..') ||
+    path.isAbsolute(relative) ||
+    relative === '.' ||
+    relative === ''
+  ) {
     throw new Error('Invalid path');
   }
   return resolvedTarget;
@@ -52,6 +57,16 @@ app.get('/dl/*', (req, res) => {
   try {
     const rel = req.params[0] || '';
     const filePath = safeJoin(TMP_DIR, rel);
+
+    // Verify file existence and type
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ ok: false, error: 'File not found' });
+    }
+    const stat = fs.statSync(filePath);
+    if (!stat.isFile()) {
+      return res.status(400).json({ ok: false, error: 'Not a file' });
+    }
+
     return res.download(filePath, path.basename(filePath), err => {
       if (err) {
         if (!res.headersSent) res.status(404).json({ ok: false, error: 'File not found' });
