@@ -8,6 +8,7 @@ const { Server } = require('socket.io');
 console.log('Starting integrated Karatoken server...');
 
 const app = express();
+app.disable('x-powered-by');
 const PORT = 3100;
 
 // Create HTTP server for Socket.IO
@@ -198,6 +199,11 @@ app.post('/api/genre/swap', async (req, res) => {
     return res.status(400).json({ ok: false, error: 'Missing audioUrl or targetGenre' });
   }
 
+  // Validate targetGenre to prevent directory traversal / command injection risks
+  if (typeof targetGenre !== 'string' || !/^[a-zA-Z0-9\s_-]+$/.test(targetGenre)) {
+    return res.status(400).json({ ok: false, error: 'Invalid targetGenre' });
+  }
+
   const jobId = createJobId();
   const job = {
     id: jobId,
@@ -231,6 +237,11 @@ app.post('/api/stylus/transfer', async (req, res) => {
 
   if (!contentUrl || !styleGenre) {
     return res.status(400).json({ ok: false, error: 'Missing contentUrl or styleGenre' });
+  }
+
+  // Validate styleGenre to prevent directory traversal / command injection risks
+  if (typeof styleGenre !== 'string' || !/^[a-zA-Z0-9\s_-]+$/.test(styleGenre)) {
+    return res.status(400).json({ ok: false, error: 'Invalid styleGenre' });
   }
 
   const jobId = createJobId();
