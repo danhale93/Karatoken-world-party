@@ -97,6 +97,16 @@ class YouTubeSearch {
         }
     }
 
+    escapeHTML(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     displayResults(videos) {
         this.resultsContainer.innerHTML = '';
 
@@ -110,23 +120,23 @@ class YouTubeSearch {
             videoElement.className = 'col-md-6 col-lg-4';
             videoElement.innerHTML = `
                 <div class="card h-100">
-                    <img src="${video.thumbnail}"
+                    <img src="${this.escapeHTML(video.thumbnail)}"
                          class="card-img-top"
-                         alt="${video.title}">
+                         alt="${this.escapeHTML(video.title)}">
                     <div class="card-body">
-                        <h6 class="card-title">${video.title}</h6>
-                        <p class="card-text text-muted small">${video.channel || 'Unknown Channel'}</p>
-                        ${video.duration ? `<small class="text-muted">Duration: ${this.formatDuration(video.duration)}</small>` : ''}
+                        <h6 class="card-title">${this.escapeHTML(video.title)}</h6>
+                        <p class="card-text text-muted small">${this.escapeHTML(video.channel || 'Unknown Channel')}</p>
+                        ${video.duration ? `<small class="text-muted">Duration: ${this.escapeHTML(this.formatDuration(video.duration))}</small>` : ''}
                     </div>
                     <div class="card-footer bg-transparent">
                         <button class="btn btn-sm btn-primary select-video"
-                                data-video-id="${video.id}"
-                                data-title="${video.title}"
-                                data-url="${video.url}">
+                                data-video-id="${this.escapeHTML(video.id)}"
+                                data-title="${this.escapeHTML(video.title)}"
+                                data-url="${this.escapeHTML(video.url)}">
                             Select
                         </button>
                         <button class="btn btn-sm btn-outline-secondary preview-video"
-                                data-video-id="${video.id}">
+                                data-video-id="${this.escapeHTML(video.id)}">
                             Preview
                         </button>
                     </div>

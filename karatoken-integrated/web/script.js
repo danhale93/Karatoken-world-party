@@ -169,6 +169,16 @@
     }
   }
 
+  function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function formatDuration(seconds) {
     if (!seconds) return '';
     const mins = Math.floor(seconds / 60);
@@ -188,10 +198,10 @@
         <span class="duration">${formatDuration(video.duration)}</span>
       </div>
       <div class="video-details">
-        <h4 class="video-title">${video.title}</h4>
+        <h4 class="video-title">${escapeHTML(video.title)}</h4>
         <div class="video-meta">
-          <span class="channel">${video.channel || 'Unknown'}</span>
-          <span class="duration">${formatDuration(video.duration)}</span>
+          <span class="channel">${escapeHTML(video.channel || 'Unknown')}</span>
+          <span class="duration">${escapeHTML(formatDuration(video.duration))}</span>
         </div>
       </div>
     `;
@@ -226,7 +236,7 @@
     ytSearchOut.innerHTML = `
       <div class="search-status">
         <div class="spinner"></div>
-        <span>Searching YouTube for "${q}"...</span>
+        <span>Searching YouTube for "${escapeHTML(q)}"...</span>
       </div>
     `;
 
@@ -241,7 +251,7 @@
       if (!data.items || data.items.length === 0) {
         ytSearchOut.innerHTML = `
           <div class="no-results">
-            No videos found for "${q}"
+            No videos found for "${escapeHTML(q)}"
             <button class="retry-btn" id="retry-search">Try again</button>
           </div>
         `;
@@ -269,7 +279,7 @@
       console.error('YouTube search error:', error);
       ytSearchOut.innerHTML = `
         <div class="error">
-          Error: ${error.message || 'Failed to search YouTube'}
+          Error: ${escapeHTML(error.message || 'Failed to search YouTube')}
           <button class="retry-btn" id="retry-search">Retry</button>
         </div>
       `;
@@ -346,7 +356,7 @@
       console.error('Download error:', error);
       ytDlOut.innerHTML = `
         <div class="error">
-          <span>Error: ${error.message || 'Failed to download video'}</span>
+          <span>Error: ${escapeHTML(error.message || 'Failed to download video')}</span>
           <button class="retry-btn" id="retry-download">Retry</button>
         </div>
       `;
