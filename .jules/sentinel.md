@@ -7,3 +7,8 @@
 **Vulnerability:** A path traversal vulnerability existed in the `/api/genre/swap` route because the backend resolved the user-controlled local `audioUrl` using `path.resolve(process.cwd(), audioUrl)` without sanitization or boundary checking. This allowed background workers to read, copy, or write dummy files adjacent to arbitrary system files like `/etc/passwd`.
 **Learning:** Local file inputs processed by background workers can be subject to path traversal if the system directly resolves paths against the process working directory without boundary checks.
 **Prevention:** Always use `path.relative()` on resolved local paths to verify that they are strictly located within the expected base directory (e.g., `process.cwd()`), throwing an error or rejecting the request if the relative path starts with `..` or is absolute.
+
+## 2026-07-28 - Path Traversal & Directory Download via /dl Endpoint
+**Vulnerability:** A path traversal vulnerability existed in `/dl` file download routes due to relying solely on `path.basename()` for filename sanitization, which fails to strip `.` and `..` (i.e. `path.basename('..') === '..'`). Furthermore, lack of file-type validation allowed users to download directory structures or crash the server by requesting base folders.
+**Learning:** `path.basename()` is insufficient for sanitizing user-input paths if they consist entirely of dot-segments. Also, serving arbitrary resolved paths without checking if they are files allows directory reading/resource consumption.
+**Prevention:** Always validate that the resolved path does not point to the base directory itself (`relative === '.' || relative === ''`) and that the resolved path is a regular file (`fs.statSync().isFile()`).
