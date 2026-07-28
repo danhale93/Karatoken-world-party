@@ -1,3 +1,17 @@
+jest.mock('pitchy', () => ({
+  PitchDetector: {
+    forFloat32Array: jest.fn().mockImplementation(() => ({
+      findPitch: jest.fn().mockImplementation((chunk: Float32Array, sampleRate: number) => {
+        const isSilent = chunk.every(v => v === 0);
+        if (isSilent) {
+          return [0, 0];
+        }
+        return [440, 0.9];
+      }),
+    })),
+  },
+}));
+
 import { detectPitch, analyzePitch } from '../../services/pitchDetection';
 import { AudioBuffer } from 'web-audio-api';
 

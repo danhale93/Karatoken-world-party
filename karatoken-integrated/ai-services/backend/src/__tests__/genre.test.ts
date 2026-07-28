@@ -45,6 +45,26 @@ describe('Genre Swap API', () => {
       expect(response.body).toHaveProperty('ok', false);
       expect(response.body).toHaveProperty('error');
     });
+
+    it('should fail background job when a path-traversal local path is supplied', async () => {
+      const createResponse = await request(server).post('/api/genre/swap').send({
+        audioUrl: '../../../../../../etc/passwd',
+        targetGenre: 'rock',
+        karaokeMode: true,
+      });
+
+      expect(createResponse.status).toBe(200);
+      expect(createResponse.body).toHaveProperty('ok', true);
+      const { jobId } = createResponse.body;
+
+      // Wait for background job execution
+      await new Promise(resolve => setTimeout(resolve, 1200));
+
+      const statusResponse = await request(server).get(`/api/genre/status/${jobId}`);
+      expect(statusResponse.status).toBe(200);
+      expect(statusResponse.body.job.status).toBe('failed');
+      expect(statusResponse.body.job.error).toBe('Access denied: Invalid file path');
+    });
   });
 
   describe('GET /api/genre/status/:jobId', () => {
