@@ -985,7 +985,8 @@ audio::-webkit-media-controls-mute-button:hover {
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+.video-result:focus-visible {
   outline: 3px solid var(--primary) !important;
   outline-offset: 2px !important;
   box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15) !important;
@@ -993,7 +994,8 @@ textarea:focus-visible {
 
 button:focus:not(:focus-visible),
 input:focus:not(:focus-visible),
-select:focus:not(:focus-visible) {
+select:focus:not(:focus-visible),
+.video-result:focus:not(:focus-visible) {
   outline: none !important;
   box-shadow: none !important;
 }

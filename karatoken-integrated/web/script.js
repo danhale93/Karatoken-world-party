@@ -40,6 +40,35 @@
     setTimeout(updateAudioPreview, 100);
   });
 
+  // Enter keydown listeners for accessible form submission
+  ytQueryInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      ytSearch();
+    }
+  });
+
+  ytUrlInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      ytDownload();
+    }
+  });
+
+  document.getElementById('code')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      sendCallback();
+    }
+  });
+
+  document.getElementById('state')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      sendCallback();
+    }
+  });
+
   // Update audio preview when URL changes
   async function updateAudioPreview() {
     const url = genreAudioUrlInput.value.trim();
@@ -95,17 +124,33 @@
 
   async function checkHealth() {
     healthOut.textContent = 'Checking…';
+    if (healthBtn) {
+      healthBtn.disabled = true;
+      healthBtn.classList.add('button-loading');
+      healthBtn.setAttribute('aria-busy', 'true');
+    }
     try {
       const res = await fetch(`${API_BASE}/health`);
       const json = await res.json();
       healthOut.textContent = JSON.stringify(json, null, 2);
     } catch (e) {
       healthOut.textContent = 'Error: ' + (e?.message || e);
+    } finally {
+      if (healthBtn) {
+        healthBtn.disabled = false;
+        healthBtn.classList.remove('button-loading');
+        healthBtn.removeAttribute('aria-busy');
+      }
     }
   }
 
   async function sendCallback() {
     cbOut.textContent = 'Sending…';
+    if (cbBtn) {
+      cbBtn.disabled = true;
+      cbBtn.classList.add('button-loading');
+      cbBtn.setAttribute('aria-busy', 'true');
+    }
     const code = document.getElementById('code').value || 'TEST_CODE';
     const state = document.getElementById('state').value || 'XYZ';
     const url = `${API_BASE}/api/spotify/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
@@ -115,6 +160,12 @@
       cbOut.textContent = JSON.stringify(json, null, 2);
     } catch (e) {
       cbOut.textContent = 'Error: ' + (e?.message || e);
+    } finally {
+      if (cbBtn) {
+        cbBtn.disabled = false;
+        cbBtn.classList.remove('button-loading');
+        cbBtn.removeAttribute('aria-busy');
+      }
     }
   }
 
@@ -138,10 +189,13 @@
   function createVideoElement(video) {
     const div = document.createElement('div');
     div.className = 'video-result';
+    div.setAttribute('tabindex', '0');
+    div.setAttribute('role', 'button');
+    div.setAttribute('aria-label', `Select video: ${video.title} by ${video.channel || 'Unknown'}`);
     div.innerHTML = `
       <div class="video-thumbnail">
-        <img src="${escapeHTML(video.thumbnail)}" alt="${escapeHTML(video.title)}" loading="lazy">
-        <span class="duration">${escapeHTML(formatDuration(video.duration))}</span>
+        <img src="${video.thumbnail}" alt="" aria-hidden="true" loading="lazy">
+        <span class="duration">${formatDuration(video.duration)}</span>
       </div>
       <div class="video-details">
         <h4 class="video-title">${escapeHTML(video.title)}</h4>
@@ -151,11 +205,18 @@
         </div>
       </div>
     `;
-    div.addEventListener('click', () => {
+    const selectVideo = () => {
       ytUrlInput.value = video.url;
       // Auto-select this video in the list
       document.querySelectorAll('.video-result').forEach(el => el.classList.remove('selected'));
       div.classList.add('selected');
+    };
+    div.addEventListener('click', selectVideo);
+    div.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selectVideo();
+      }
     });
     return div;
   }
@@ -167,7 +228,11 @@
       return;
     }
 
-    ytSearchBtn.disabled = true;
+    if (ytSearchBtn) {
+      ytSearchBtn.disabled = true;
+      ytSearchBtn.classList.add('button-loading');
+      ytSearchBtn.setAttribute('aria-busy', 'true');
+    }
     ytSearchOut.innerHTML = `
       <div class="search-status">
         <div class="spinner"></div>
@@ -220,7 +285,11 @@
       `;
       document.getElementById('retry-search')?.addEventListener('click', ytSearch);
     } finally {
-      ytSearchBtn.disabled = false;
+      if (ytSearchBtn) {
+        ytSearchBtn.disabled = false;
+        ytSearchBtn.classList.remove('button-loading');
+        ytSearchBtn.removeAttribute('aria-busy');
+      }
     }
   }
 
@@ -304,148 +373,155 @@
     const maxRetries = 5;
     const retryDelay = 2000; // 2 seconds
 
-    // Poll backend job status until completed or failed
-    while (true) {
-      try {
-        const res = await fetch(`${API_BASE}${statusUrl}`, {
-          headers: { 'Cache-Control': 'no-cache' }
-        });
-        
-        if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
-        
-        const js = await res.json();
-        if (!js.ok) throw new Error(js.error || 'Status failed');
-        
-        const job = js.job || {};
-        const progress = typeof job.progress === 'number' ? job.progress : lastProgress;
-        lastProgress = progress;
-        retryCount = 0; // Reset retry counter on successful fetch
+    try {
+      // Poll backend job status until completed or failed
+      while (true) {
+        try {
+          const res = await fetch(`${API_BASE}${statusUrl}`, {
+            headers: { 'Cache-Control': 'no-cache' }
+          });
 
-        // Update progress and status
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const elapsedStr = elapsed > 60 
-          ? `${Math.floor(elapsed / 60)}m ${elapsed % 60}s` 
-          : `${elapsed}s`;
+          if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
+
+          const js = await res.json();
+          if (!js.ok) throw new Error(js.error || 'Status failed');
+
+          const job = js.job || {};
+          const progress = typeof job.progress === 'number' ? job.progress : lastProgress;
+          lastProgress = progress;
+          retryCount = 0; // Reset retry counter on successful fetch
+
+          // Update progress and status
+          const elapsed = Math.floor((Date.now() - startTime) / 1000);
+          const elapsedStr = elapsed > 60
+            ? `${Math.floor(elapsed / 60)}m ${elapsed % 60}s`
+            : `${elapsed}s`;
+
+          let status = job.status || 'Processing';
+          let details = job.message || '';
           
-        let status = job.status || 'Processing';
-        let details = job.message || '';
-        
-        // Add more context to the status
-        if (status === 'processing') {
-          status = 'Processing';
-          if (job.stage) {
-            details = `Step: ${job.stage.charAt(0).toUpperCase() + job.stage.slice(1)}`;
-          }
-        } else if (status === 'queued') {
-          status = 'Queued';
-          details = 'Waiting for a worker to become available...';
-        }
-        
-        // Update progress UI
-        updateProgress(
-          progress,
-          status,
-          details + (details ? ' • ' : '') + `Elapsed: ${elapsedStr}`
-        );
-
-        // Handle completed job
-        if (job.status === 'completed') {
-          const totalTime = Math.round((Date.now() - startTime) / 1000);
-          updateProgress(100, 'Complete', `Processing completed in ${totalTime}s`);
-          const outRel = job.outputUrl
-            ? (job.outputUrl.startsWith('http') ? new URL(job.outputUrl).pathname : job.outputUrl)
-            : null;
-          const lrcRel = job.lrcUrl
-            ? (job.lrcUrl.startsWith('http') ? new URL(job.lrcUrl).pathname : job.lrcUrl)
-            : null;
-          // Prefer relative URLs so they work through the preview proxy
-          let outUrl = outRel && outRel.startsWith('/') ? outRel : (outRel ? `/${outRel}` : null);
-          let lrcUrl = lrcRel && lrcRel.startsWith('/') ? lrcRel : (lrcRel ? `/${lrcRel}` : null);
-          // Optionally validate existence
-          if (outUrl) {
-            try { const h = await fetch(outUrl, { method: 'HEAD' }); if (!h.ok) throw new Error('bad'); } catch (_) {}
-          }
-          if (lrcUrl) {
-            try { const h = await fetch(lrcUrl, { method: 'HEAD' }); if (!h.ok) throw new Error('bad'); } catch (_) {}
-          }
-          const outName = outUrl ? (outUrl.split('/').pop() || 'output.wav') : null;
-          const lrcName = lrcUrl ? (lrcUrl.split('/').pop() || 'lyrics.lrc') : null;
-          const outDl = toDlUrl(outUrl);
-          const lrcDl = toDlUrl(lrcUrl);
-          // Render clickable links to outputs
-          const lines = [];
-          lines.push(`<div><strong>Status:</strong> ${escapeHTML(job.status)} (${job.progress}%)</div>`);
-          if (outUrl) {
-            if (outDl) {
-              lines.push(`<div><a href="${escapeHTML(outDl)}" download="${escapeHTML(outName)}">Download Output</a> <small><a href="${escapeHTML(outUrl)}" target="_blank" rel="noopener">(open)</a></small></div>`);
-            } else {
-              lines.push(`<div><a href="${escapeHTML(outUrl)}" download="${escapeHTML(outName)}" target="_blank" rel="noopener">Download Output</a></div>`);
+          // Add more context to the status
+          if (status === 'processing') {
+            status = 'Processing';
+            if (job.stage) {
+              details = `Step: ${job.stage.charAt(0).toUpperCase() + job.stage.slice(1)}`;
             }
-          }
-          if (lrcUrl) {
-            if (lrcDl) {
-              lines.push(`<div><a href="${escapeHTML(lrcDl)}" download="${escapeHTML(lrcName)}">Download LRC</a> <small><a href="${escapeHTML(lrcUrl)}" target="_blank" rel="noopener">(open)</a></small></div>`);
-            } else {
-              lines.push(`<div><a href="${escapeHTML(lrcUrl)}" download="${escapeHTML(lrcName)}" target="_blank" rel="noopener">Download LRC</a></div>`);
-            }
-          }
-          genreSwapOut.innerHTML = lines.join('\n');
-
-          // Show inline audio player for the result
-          if (genreAudioEl && outUrl) {
-            genreAudioEl.src = outUrl;
-            genreAudioEl.style.display = 'block';
-            genreAudioEl.load().catch(e => {
-              console.error('Failed to load result audio:', e);
-              const msg = document.createElement('div');
-              msg.className = 'error-message';
-              msg.textContent = 'Audio preview failed to load. Try downloading the file instead.';
-              genreSwapOut.appendChild(msg);
-            });
+          } else if (status === 'queued') {
+            status = 'Queued';
+            details = 'Waiting for a worker to become available...';
           }
 
-          // Fetch and display LRC text
-          if (genreLrcOut && lrcUrl) {
-            try {
-              const lrcRes = await fetch(lrcUrl);
-              const lrcText = await lrcRes.text();
-              genreLrcOut.textContent = lrcText;
-              genreLrcOut.style.display = '';
-            } catch (_) {
-              genreLrcOut.textContent = 'Failed to load LRC';
-              genreLrcOut.style.display = '';
+          // Update progress UI
+          updateProgress(
+            progress,
+            status,
+            details + (details ? ' • ' : '') + `Elapsed: ${elapsedStr}`
+          );
+
+          // Handle completed job
+          if (job.status === 'completed') {
+            const totalTime = Math.round((Date.now() - startTime) / 1000);
+            updateProgress(100, 'Complete', `Processing completed in ${totalTime}s`);
+            const outRel = job.outputUrl
+              ? (job.outputUrl.startsWith('http') ? new URL(job.outputUrl).pathname : job.outputUrl)
+              : null;
+            const lrcRel = job.lrcUrl
+              ? (job.lrcUrl.startsWith('http') ? new URL(job.lrcUrl).pathname : job.lrcUrl)
+              : null;
+            // Prefer relative URLs so they work through the preview proxy
+            let outUrl = outRel && outRel.startsWith('/') ? outRel : (outRel ? `/${outRel}` : null);
+            let lrcUrl = lrcRel && lrcRel.startsWith('/') ? lrcRel : (lrcRel ? `/${lrcRel}` : null);
+            // Optionally validate existence
+            if (outUrl) {
+              try { const h = await fetch(outUrl, { method: 'HEAD' }); if (!h.ok) throw new Error('bad'); } catch (_) {}
             }
+            if (lrcUrl) {
+              try { const h = await fetch(lrcUrl, { method: 'HEAD' }); if (!h.ok) throw new Error('bad'); } catch (_) {}
+            }
+            const outName = outUrl ? (outUrl.split('/').pop() || 'output.wav') : null;
+            const lrcName = lrcUrl ? (lrcUrl.split('/').pop() || 'lyrics.lrc') : null;
+            const outDl = toDlUrl(outUrl);
+            const lrcDl = toDlUrl(lrcUrl);
+            // Render clickable links to outputs
+            const lines = [];
+            lines.push(`<div><strong>Status:</strong> ${job.status} (${job.progress}%)</div>`);
+            if (outUrl) {
+              if (outDl) {
+                lines.push(`<div><a href="${outDl}" download="${outName}">Download Output</a> <small><a href="${outUrl}" target="_blank" rel="noopener">(open)</a></small></div>`);
+              } else {
+                lines.push(`<div><a href="${outUrl}" download="${outName}" target="_blank" rel="noopener">Download Output</a></div>`);
+              }
+            }
+            if (lrcUrl) {
+              if (lrcDl) {
+                lines.push(`<div><a href="${lrcDl}" download="${lrcName}">Download LRC</a> <small><a href="${lrcUrl}" target="_blank" rel="noopener">(open)</a></small></div>`);
+              } else {
+                lines.push(`<div><a href="${lrcUrl}" download="${lrcName}" target="_blank" rel="noopener">Download LRC</a></div>`);
+              }
+            }
+            genreSwapOut.innerHTML = lines.join('\n');
+
+            // Show inline audio player for the result
+            if (genreAudioEl && outUrl) {
+              genreAudioEl.src = outUrl;
+              genreAudioEl.style.display = 'block';
+              genreAudioEl.load().catch(e => {
+                console.error('Failed to load result audio:', e);
+                const msg = document.createElement('div');
+                msg.className = 'error-message';
+                msg.textContent = 'Audio preview failed to load. Try downloading the file instead.';
+                genreSwapOut.appendChild(msg);
+              });
+            }
+
+            // Fetch and display LRC text
+            if (genreLrcOut && lrcUrl) {
+              try {
+                const lrcRes = await fetch(lrcUrl);
+                const lrcText = await lrcRes.text();
+                genreLrcOut.textContent = lrcText;
+                genreLrcOut.style.display = '';
+              } catch (_) {
+                genreLrcOut.textContent = 'Failed to load LRC';
+                genreLrcOut.style.display = '';
+              }
+            }
+            break;
+          } else if (job.status === 'failed') {
+            updateProgress(0, 'Failed', job.error || 'An error occurred during processing');
+            genreSwapOut.textContent = `Error: ${job.error || 'Unknown error'}\n\n${JSON.stringify(js, null, 2)}`;
+            break;
+          } else {
+            // Show detailed status while processing
+            genreSwapOut.textContent = `Processing... (${progress}%)\n${JSON.stringify(js, null, 2)}`;
+
+            // Wait before polling again with exponential backoff for retries
+            const delay = Math.min(5000, 1000 * Math.pow(2, retryCount));
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
           }
-          break;
-        } else if (job.status === 'failed') {
-          updateProgress(0, 'Failed', job.error || 'An error occurred during processing');
-          genreSwapOut.textContent = `Error: ${job.error || 'Unknown error'}\n\n${JSON.stringify(js, null, 2)}`;
-          break;
-        } else {
-          // Show detailed status while processing
-          genreSwapOut.textContent = `Processing... (${progress}%)\n${JSON.stringify(js, null, 2)}`;
+        } catch (e) {
+          console.error('Polling error:', e);
+          retryCount++;
           
-          // Wait before polling again with exponential backoff for retries
-          const delay = Math.min(5000, 1000 * Math.pow(2, retryCount));
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue;
+          if (retryCount >= maxRetries) {
+            updateProgress(0, 'Error', 'Failed to get updates from server');
+            genreSwapOut.textContent = `Error: Failed to check status after ${maxRetries} attempts: ${e?.message || e}`;
+            break;
+          }
+
+          updateProgress(
+            lastProgress,
+            'Connecting...',
+            `Retrying (${retryCount}/${maxRetries}) - ${e?.message || 'Connection error'}`
+          );
         }
-      } catch (e) {
-        console.error('Polling error:', e);
-        retryCount++;
-        
-        if (retryCount >= maxRetries) {
-          updateProgress(0, 'Error', 'Failed to get updates from server');
-          genreSwapOut.textContent = `Error: Failed to check status after ${maxRetries} attempts: ${e?.message || e}`;
-          genreSwapBtn.disabled = false;
-          break;
-        }
-        
-        updateProgress(
-          lastProgress, 
-          'Connecting...', 
-          `Retrying (${retryCount}/${maxRetries}) - ${e?.message || 'Connection error'}`
-        );
+      }
+    } finally {
+      if (genreSwapBtn) {
+        genreSwapBtn.disabled = false;
+        genreSwapBtn.classList.remove('button-loading');
+        genreSwapBtn.removeAttribute('aria-busy');
       }
     }
   }
@@ -464,7 +540,11 @@
     }
 
     // Reset UI
-    genreSwapBtn.disabled = true;
+    if (genreSwapBtn) {
+      genreSwapBtn.disabled = true;
+      genreSwapBtn.classList.add('button-loading');
+      genreSwapBtn.setAttribute('aria-busy', 'true');
+    }
     genreSwapOut.textContent = 'Starting genre swap...';
     updateProgress(0, 'Starting...', 'Preparing to process your request');
     genreAudioEl.style.display = 'none';
@@ -496,13 +576,21 @@
       } else {
         updateProgress(100, 'Complete', 'Processing complete');
         genreSwapOut.textContent = 'Started processing, but no status URL provided';
-        genreSwapBtn.disabled = false;
+        if (genreSwapBtn) {
+          genreSwapBtn.disabled = false;
+          genreSwapBtn.classList.remove('button-loading');
+          genreSwapBtn.removeAttribute('aria-busy');
+        }
       }
     } catch (e) {
       console.error('Genre swap error:', e);
       updateProgress(0, 'Error', 'An error occurred');
       genreSwapOut.textContent = `Error: ${e?.message || e}`;
-      genreSwapBtn.disabled = false;
+      if (genreSwapBtn) {
+        genreSwapBtn.disabled = false;
+        genreSwapBtn.classList.remove('button-loading');
+        genreSwapBtn.removeAttribute('aria-busy');
+      }
     }
   }
 

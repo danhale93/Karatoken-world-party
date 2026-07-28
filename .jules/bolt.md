@@ -9,3 +9,11 @@
 ## 2026-07-25 - Subarray Buffer Sharing Side Effects with TensorFlow.js Tensors
 **Learning:** When passing a `.subarray()` view of a typed array to TensorFlow.js (e.g. `tf.tensor2d`), TF.js ignores the offset/length of the view and reads the *entire underlying ArrayBuffer*. This causes massive data size mismatch and correctness bugs when processing audio chunks.
 **Action:** Always construct a new independent TypedArray copy (`new Float32Array(subarray.length)` and then `.set(subarray)`) before passing chunk data to TensorFlow.js tensors to ensure memory isolation and correctness.
+
+## 2026-07-26 - Single/Double-Pass Iterative Array Calculation vs. Multi-Pass Allocations and Spreading
+**Learning:** Performing multiple passes (`filter`, `map`, `reduce`) over potentially massive arrays of numbers (like audio pitch data) causes high Garbage Collection pressure and performance degradation. Worse, using the spread operator (`...`) with `Math.min` or `Math.max` on large arrays can exceed the JS engine call stack size limit, causing the application to crash with `Maximum call stack size exceeded`.
+**Action:** Always use simple, zero-allocation iterative loops to compute statistics (sum, min, max, count, standard deviation) in a single or double pass, avoiding array allocation methods and spread operators on datasets of arbitrary size.
+
+## 2026-07-27 - High-Performance Audio Processing with Typed Arrays in JS/TS
+**Learning:** Audio processing hot paths can suffer extreme latency and garbage-collection pressure from redundant array allocations (like duplicating original signals) and slow element-by-element copy loops. Starting loops at non-zero offsets can eliminate inside-loop conditional checks (avoiding CPU branch instructions completely), and utilizing native `.set()` copies data at C++ speed (comparable to `memcpy`).
+**Action:** Never allocate duplicate array buffers for unmodified "dry" reference signals; start processing loops at relevant delay/offset bounds to eliminate branching, and use `.set()` for high-performance block memory copying.
