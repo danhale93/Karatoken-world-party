@@ -16,9 +16,10 @@ export function detectPitch(audioBuffer: AudioBuffer, windowSize = 2048): number
 
   // Create a pitch detector for the given sample rate
   const detector = PitchDetector.forFloat32Array(windowSize);
+  const hopSize = Math.floor(windowSize / 2);
 
   // Process the audio in chunks
-  for (let i = 0; i < channelData.length - windowSize; i += Math.floor(windowSize / 2)) {
+  for (let i = 0; i < channelData.length - windowSize; i += hopSize) {
     // ⚡ Bolt Optimization: Use .subarray() instead of .slice() to avoid data copy allocation overhead
     const chunk = channelData.subarray(i, i + windowSize);
     const [pitch, clarity] = detector.findPitch(chunk, sampleRate);
@@ -35,7 +36,8 @@ export function detectPitch(audioBuffer: AudioBuffer, windowSize = 2048): number
 }
 
 export function analyzePitch(pitchData: number[]): PitchAnalysis {
-  if (pitchData.length === 0) {
+  const len = pitchData.length;
+  if (len === 0) {
     return {
       averagePitch: 0,
       minPitch: 0,
@@ -45,10 +47,25 @@ export function analyzePitch(pitchData: number[]): PitchAnalysis {
     };
   }
 
-  // Filter out invalid pitches
-  const validPitches = pitchData.filter(p => p > 0);
+  // ⚡ Bolt Optimization: 2-pass iterative calculation with ZERO allocations.
+  // This avoids multi-pass array allocations (filter, map) and prevents stack overflow
+  // caused by spreading potentially massive pitch arrays (Math.min(...), Math.max(...)).
+  let sum = 0;
+  let count = 0;
+  let min = Infinity;
+  let max = -Infinity;
 
-  if (validPitches.length === 0) {
+  for (let i = 0; i < len; i++) {
+    const p = pitchData[i];
+    if (p > 0) {
+      sum += p;
+      count++;
+      if (p < min) min = p;
+      if (p > max) max = p;
+    }
+  }
+
+  if (count === 0) {
     return {
       averagePitch: 0,
       minPitch: 0,
@@ -58,16 +75,18 @@ export function analyzePitch(pitchData: number[]): PitchAnalysis {
     };
   }
 
-  // Calculate basic statistics
-  const sum = validPitches.reduce((a, b) => a + b, 0);
-  const avg = sum / validPitches.length;
-  const min = Math.min(...validPitches);
-  const max = Math.max(...validPitches);
+  const avg = sum / count;
 
-  // Calculate standard deviation for stability
-  const squareDiffs = validPitches.map(p => Math.pow(p - avg, 2));
-  const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / validPitches.length;
-  const stdDev = Math.sqrt(avgSquareDiff);
+  let sumOfSquaredDiffs = 0;
+  for (let i = 0; i < len; i++) {
+    const p = pitchData[i];
+    if (p > 0) {
+      const diff = p - avg;
+      sumOfSquaredDiffs += diff * diff;
+    }
+  }
+
+  const stdDev = Math.sqrt(sumOfSquaredDiffs / count);
 
   return {
     averagePitch: avg,

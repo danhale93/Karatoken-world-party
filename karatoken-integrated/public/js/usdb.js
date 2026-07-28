@@ -10,7 +10,7 @@ class USDBSearch {
             <div class="usdb-search">
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" id="usdbSearchInput" 
-                           placeholder="Search USDB for lyrics...">
+                           placeholder="Search USDB for lyrics..." aria-label="Search UltraStar Database for lyrics">
                     <button class="btn btn-primary" type="button" id="usdbSearchBtn">
                         <i class="bi bi-search"></i> Search
                     </button>

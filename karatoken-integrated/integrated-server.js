@@ -334,7 +334,19 @@ app.get('/dl/:filename', (req, res) => {
   const safeFilename = path.basename(filename);
   const filepath = path.join(TMP_DIR, safeFilename);
 
-  if (!fs.existsSync(filepath)) {
+  // Validate the path starts within TMP_DIR boundary, and is not the base dir itself
+  const relative = path.relative(TMP_DIR, filepath);
+  if (relative.startsWith('..') || path.isAbsolute(relative) || relative === '.' || relative === '') {
+    return res.status(400).json({ ok: false, error: 'Invalid file name' });
+  }
+
+  // Ensure file exists and is a file (not a directory)
+  try {
+    const stat = fs.statSync(filepath);
+    if (!stat.isFile()) {
+      return res.status(400).json({ ok: false, error: 'Not a file' });
+    }
+  } catch (err) {
     return res.status(404).json({ ok: false, error: 'File not found' });
   }
 

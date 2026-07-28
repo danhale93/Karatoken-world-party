@@ -10,7 +10,7 @@ class YouTubeSearch {
             <div class="youtube-search">
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" id="youtubeSearchInput" 
-                           placeholder="Search YouTube...">
+                           placeholder="Search YouTube..." aria-label="Search YouTube">
                     <button class="btn btn-primary" type="button" id="youtubeSearchBtn">
                         <i class="bi bi-search"></i> Search
                     </button>
