@@ -40,6 +40,35 @@
     setTimeout(updateAudioPreview, 100);
   });
 
+  // Enter keydown listeners for accessible form submission
+  ytQueryInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      ytSearch();
+    }
+  });
+
+  ytUrlInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      ytDownload();
+    }
+  });
+
+  document.getElementById('code')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      sendCallback();
+    }
+  });
+
+  document.getElementById('state')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      sendCallback();
+    }
+  });
+
   // Update audio preview when URL changes
   async function updateAudioPreview() {
     const url = genreAudioUrlInput.value.trim();
@@ -179,7 +208,11 @@
       return;
     }
 
-    ytSearchBtn.disabled = true;
+    if (ytSearchBtn) {
+      ytSearchBtn.disabled = true;
+      ytSearchBtn.classList.add('button-loading');
+      ytSearchBtn.setAttribute('aria-busy', 'true');
+    }
     ytSearchOut.innerHTML = `
       <div class="search-status">
         <div class="spinner"></div>
@@ -232,7 +265,11 @@
       `;
       document.getElementById('retry-search')?.addEventListener('click', ytSearch);
     } finally {
-      ytSearchBtn.disabled = false;
+      if (ytSearchBtn) {
+        ytSearchBtn.disabled = false;
+        ytSearchBtn.classList.remove('button-loading');
+        ytSearchBtn.removeAttribute('aria-busy');
+      }
     }
   }
 
