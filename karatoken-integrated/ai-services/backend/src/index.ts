@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -23,6 +24,7 @@ const PROJECT_ROOT = path.resolve(__dirname, '../../../../karatoken-integrated')
 const WEB_DIR = path.join(PROJECT_ROOT, 'web');
 
 if (fs.existsSync(WEB_DIR)) {
+  // eslint-disable-next-line no-console
   console.log('Serving static web from:', WEB_DIR);
   app.use('/', express.static(WEB_DIR));
   // Fallback for root to ensure index.html is served
@@ -37,6 +39,7 @@ if (fs.existsSync(WEB_DIR)) {
 const TMP_DIR = path.resolve(process.cwd(), 'tmp');
 if (!fs.existsSync(TMP_DIR)) fs.mkdirSync(TMP_DIR, { recursive: true });
 app.use('/tmp', express.static(TMP_DIR));
+// eslint-disable-next-line no-console
 console.log('Exposing tmp files from:', TMP_DIR);
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -52,15 +55,34 @@ app.get('/health', (_req: Request, res: Response) => {
 
 // Force-download helper
 function safeJoin(base: string, target: string): string {
-  const p = path.normalize(path.join(base, target));
-  if (!p.startsWith(base)) throw new Error('Invalid path');
-  return p;
+  const resolvedBase = path.resolve(base);
+  const resolvedTarget = path.resolve(resolvedBase, target);
+  const relative = path.relative(resolvedBase, resolvedTarget);
+  if (
+    relative.startsWith('..') ||
+    path.isAbsolute(relative) ||
+    relative === '.' ||
+    relative === ''
+  ) {
+    throw new Error('Invalid path');
+  }
+  return resolvedTarget;
 }
 
 app.get('/dl/*', (req: Request, res: Response) => {
   try {
     const rel = req.params[0] || '';
     const filePath = safeJoin(TMP_DIR, rel);
+
+    // Verify file existence and type
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ ok: false, error: 'File not found' });
+    }
+    const stat = fs.statSync(filePath);
+    if (!stat.isFile()) {
+      return res.status(400).json({ ok: false, error: 'Not a file' });
+    }
+
     return res.download(filePath, path.basename(filePath), err => {
       if (err) {
         if (!res.headersSent) res.status(404).json({ ok: false, error: 'File not found' });
@@ -82,6 +104,7 @@ app.get('/api/spotify/callback', (req: Request, res: Response) => {
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
+    // eslint-disable-next-line no-console
     console.log(`Backend listening on port ${PORT}`);
   });
 }

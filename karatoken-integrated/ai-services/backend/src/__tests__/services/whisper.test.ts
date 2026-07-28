@@ -5,13 +5,19 @@ import path from 'path';
 // Mock whisper-node module
 jest.mock('whisper-node', () => ({
   __esModule: true,
-  default: jest.fn().mockImplementation((audioPath, options) => {
+  whisper: jest.fn().mockImplementation((audioPath, options) => {
     // Mock implementation that returns a simple transcription
     if (!fs.existsSync(audioPath)) {
       throw new Error('Audio file not found');
     }
-    return '1\n00:00:00,000 --> 00:00:05,000\nThis is a test transcription\n';
-  })
+    if (options && options.output) {
+      fs.writeFileSync(
+        options.output,
+        '1\n00:00:00,000 --> 00:00:05,000\nThis is a test transcription\n'
+      );
+    }
+    return Promise.resolve();
+  }),
 }));
 
 describe('Whisper Transcription Service', () => {
@@ -23,7 +29,7 @@ describe('Whisper Transcription Service', () => {
     if (!fs.existsSync(testDir)) {
       fs.mkdirSync(testDir, { recursive: true });
     }
-    
+
     // Create a small test audio file
     if (!fs.existsSync(testAudioPath)) {
       fs.writeFileSync(testAudioPath, Buffer.alloc(1024)); // 1KB dummy audio file

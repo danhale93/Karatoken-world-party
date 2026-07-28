@@ -1,4 +1,4 @@
-import { pipeline } from 'transformers';
+import { pipeline } from '@xenova/transformers';
 import { createHash } from 'crypto';
 import fs from 'fs';
 import path from 'path';
@@ -30,41 +30,41 @@ export async function analyzeEmotion(text: string): Promise<EmotionResult> {
     return {
       dominantEmotion: 'neutral',
       confidence: 0,
-      emotions: { neutral: 0 }
+      emotions: { neutral: 0 },
     };
   }
 
   try {
     const classifier = await getEmotionClassifier();
     const results = await classifier(text, { topk: 5 });
-    
+
     // Process the results
     const emotions: { [key: string]: number } = {};
     let dominantEmotion = 'neutral';
     let maxScore = 0;
-    
+
     results.forEach((result: { label: string; score: number }) => {
       const emotion = result.label.toLowerCase();
       const score = result.score;
       emotions[emotion] = score;
-      
+
       if (score > maxScore) {
         maxScore = score;
         dominantEmotion = emotion;
       }
     });
-    
+
     return {
       dominantEmotion,
       confidence: maxScore,
-      emotions
+      emotions,
     };
   } catch (error) {
     console.error('Error in emotion analysis:', error);
     return {
       dominantEmotion: 'error',
       confidence: 0,
-      emotions: { error: 0 }
+      emotions: { error: 0 },
     };
   }
 }
@@ -81,27 +81,27 @@ if (!fs.existsSync(CACHE_DIR)) {
 export async function analyzeEmotionWithCache(text: string): Promise<EmotionResult> {
   const hash = createHash('md5').update(text).digest('hex');
   const cacheFile = path.join(CACHE_DIR, `${hash}.json`);
-  
+
   try {
     // Check in-memory cache first
     if (emotionCache[hash]) {
       return emotionCache[hash];
     }
-    
+
     // Check disk cache
     if (fs.existsSync(cacheFile)) {
       const cached = JSON.parse(fs.readFileSync(cacheFile, 'utf-8'));
       emotionCache[hash] = cached;
       return cached;
     }
-    
+
     // Analyze and cache the result
     const result = await analyzeEmotion(text);
-    
+
     // Update caches
     emotionCache[hash] = result;
     fs.writeFileSync(cacheFile, JSON.stringify(result), 'utf-8');
-    
+
     return result;
   } catch (error) {
     console.error('Error in cached emotion analysis:', error);

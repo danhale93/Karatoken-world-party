@@ -1,8 +1,7 @@
+import express, { Request, RequestHandler, Response } from 'express';
 import fs from 'fs';
 import { createServer } from 'http';
 import path from 'path';
-
-import express, { Request, Response, RequestHandler } from 'express';
 import { Server } from 'socket.io';
 
 // TODO: Uncomment when rate limiting is needed
@@ -74,13 +73,12 @@ export const initSocketIO = (server: ReturnType<typeof createServer>) => {
   io = new Server(server, {
     cors: {
       origin: process.env.CLIENT_URL || '*',
-      methods: ['GET', 'POST']
-    }
+      methods: ['GET', 'POST'],
+    },
   });
 
   return io;
 };
-
 
 // Cache middleware
 const cacheMiddleware: RequestHandler = async (req, res, next) => {
@@ -130,6 +128,11 @@ async function runGenreSwap(job: Job) {
 
     if (isLocalFile) {
       localAudioPath = path.resolve(process.cwd(), audioUrl);
+      // Ensure the resolved path remains within the project directory to prevent path traversal
+      const relative = path.relative(process.cwd(), localAudioPath);
+      if (relative.startsWith('..') || path.isAbsolute(relative)) {
+        throw new Error('Access denied: Invalid file path');
+      }
       if (!fs.existsSync(localAudioPath)) {
         throw new Error(`Local file not found: ${audioUrl}`);
       }
@@ -199,7 +202,12 @@ const validateInput: RequestHandler = (req, res, next) => {
   if (!targetGenre || typeof targetGenre !== 'string') {
     return res.status(400).json({ ok: false, error: 'Invalid targetGenre' });
   }
-  
+
+  // Validate targetGenre characters to prevent command injection, traversal, or special characters injection
+  if (!/^[a-zA-Z0-9\s_-]+$/.test(targetGenre)) {
+    return res.status(400).json({ ok: false, error: 'Invalid targetGenre format' });
+  }
+
   next();
 };
 

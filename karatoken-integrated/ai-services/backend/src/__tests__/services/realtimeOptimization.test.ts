@@ -3,7 +3,7 @@ import { AudioBuffer } from 'web-audio-api';
 
 describe('Real-time Audio Processing', () => {
   let audioProcessor: AudioProcessor;
-  
+
   // Create a mock AudioBuffer
   const createMockAudioBuffer = (sampleRate: number, length: number, frequency: number) => {
     return {
@@ -26,29 +26,29 @@ describe('Real-time Audio Processing', () => {
       sampleRate: 44100,
       bufferSize: 4096,
       numChannels: 1,
-      useGPU: false
+      useGPU: false,
     });
   });
 
   it('should process audio in real-time', async () => {
     const audioBuffer = createMockAudioBuffer(44100, 44100, 440);
     const chunkSize = 1024;
-    
+
     const result = await audioProcessor.process(audioBuffer, {
-      onProgress: (progress) => {
+      onProgress: progress => {
         expect(progress).toBeGreaterThanOrEqual(0);
         expect(progress).toBeLessThanOrEqual(1);
       },
-      chunkSize
+      chunkSize,
     });
-    
+
     expect(result).toBeDefined();
     expect(result.length).toBeGreaterThan(0);
   });
 
   it('should handle empty audio buffer', async () => {
     const audioBuffer = createMockAudioBuffer(44100, 0, 0);
-    
+
     const result = await audioProcessor.process(audioBuffer);
     expect(result).toBeDefined();
     expect(result.length).toBe(0);
@@ -56,14 +56,14 @@ describe('Real-time Audio Processing', () => {
 
   it('should apply effects if specified', async () => {
     const audioBuffer = createMockAudioBuffer(44100, 44100, 440);
-    
+
     const result = await audioProcessor.process(audioBuffer, {
       effects: [
         { type: 'pitchShift', value: 2 },
-        { type: 'reverb', value: 0.5 }
-      ]
+        { type: 'reverb', value: 0.5 },
+      ],
     });
-    
+
     expect(result).toBeDefined();
     expect(result.length).toBeGreaterThan(0);
   });

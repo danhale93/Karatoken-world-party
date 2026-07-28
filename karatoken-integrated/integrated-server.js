@@ -8,6 +8,7 @@ const { Server } = require('socket.io');
 console.log('Starting integrated Karatoken server...');
 
 const app = express();
+app.disable('x-powered-by');
 const PORT = 3100;
 
 // Create HTTP server for Socket.IO
@@ -198,6 +199,11 @@ app.post('/api/genre/swap', async (req, res) => {
     return res.status(400).json({ ok: false, error: 'Missing audioUrl or targetGenre' });
   }
 
+  // Validate targetGenre to prevent directory traversal / command injection risks
+  if (typeof targetGenre !== 'string' || !/^[a-zA-Z0-9\s_-]+$/.test(targetGenre)) {
+    return res.status(400).json({ ok: false, error: 'Invalid targetGenre' });
+  }
+
   const jobId = createJobId();
   const job = {
     id: jobId,
@@ -231,6 +237,11 @@ app.post('/api/stylus/transfer', async (req, res) => {
 
   if (!contentUrl || !styleGenre) {
     return res.status(400).json({ ok: false, error: 'Missing contentUrl or styleGenre' });
+  }
+
+  // Validate styleGenre to prevent directory traversal / command injection risks
+  if (typeof styleGenre !== 'string' || !/^[a-zA-Z0-9\s_-]+$/.test(styleGenre)) {
+    return res.status(400).json({ ok: false, error: 'Invalid styleGenre' });
   }
 
   const jobId = createJobId();
@@ -319,13 +330,27 @@ app.get('/jobs/:jobId', (req, res) => {
 // File download endpoint
 app.get('/dl/:filename', (req, res) => {
   const { filename } = req.params;
-  const filepath = path.join(TMP_DIR, filename);
+  // Sanitize filename to prevent path traversal vulnerability (strip folder paths)
+  const safeFilename = path.basename(filename);
+  const filepath = path.join(TMP_DIR, safeFilename);
 
-  if (!fs.existsSync(filepath)) {
+  // Validate the path starts within TMP_DIR boundary, and is not the base dir itself
+  const relative = path.relative(TMP_DIR, filepath);
+  if (relative.startsWith('..') || path.isAbsolute(relative) || relative === '.' || relative === '') {
+    return res.status(400).json({ ok: false, error: 'Invalid file name' });
+  }
+
+  // Ensure file exists and is a file (not a directory)
+  try {
+    const stat = fs.statSync(filepath);
+    if (!stat.isFile()) {
+      return res.status(400).json({ ok: false, error: 'Not a file' });
+    }
+  } catch (err) {
     return res.status(404).json({ ok: false, error: 'File not found' });
   }
 
-  res.download(filepath, filename, (err) => {
+  res.download(filepath, safeFilename, (err) => {
     if (err) {
       console.error('Download error:', err);
       if (!res.headersSent) {

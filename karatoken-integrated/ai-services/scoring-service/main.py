@@ -39,20 +39,19 @@ def analyze_pitch(audio_data: np.ndarray, sr: int) -> dict:
     # Get pitch using librosa's piptrack
     pitches, magnitudes = librosa.piptrack(y=audio_data, sr=sr)
     
-    # PERFORMANCE OPTIMIZATION: Vectorized search of maximum magnitudes across all frames.
-    # Avoids a slow Python for-loop querying argmax and copying elements.
-    best_indices = np.argmax(magnitudes, axis=0)
-    frame_indices = np.arange(pitches.shape[1])
-    best_pitches = pitches[best_indices, frame_indices]
-    pitch_values = best_pitches[best_pitches > 0]
+    # ⚡ Bolt Optimization: Vectorized frame-by-frame pitch extraction using argmax along axis 0 and advanced indexing.
+    # This avoids expensive interpreted Python loops and works entirely in fast C memory.
+    indices = np.argmax(magnitudes, axis=0)
+    pitch_values_all = pitches[indices, np.arange(pitches.shape[1])]
+    pitch_values = pitch_values_all[pitch_values_all > 0]
 
-    # PERFORMANCE OPTIMIZATION: Cache valid pitches to avoid running pitches > 0 three times on massive arrays.
+    # Pre-calculate the pitches filter once to avoid redundant computations.
     valid_pitches = pitches[pitches > 0]
     has_valid = len(valid_pitches) > 0
     
     return {
-        'average_pitch': float(np.mean(valid_pitches)) if has_valid else 0,
-        'pitch_variance': float(np.var(valid_pitches)) if has_valid else 0,
+        'average_pitch': float(np.mean(valid_pitches)) if has_valid else 0.0,
+        'pitch_variance': float(np.var(valid_pitches)) if has_valid else 0.0,
         'total_notes': len(pitch_values)
     }
 

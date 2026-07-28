@@ -32,7 +32,7 @@ const testFile = path.join(__dirname, 'src', 'index.ts');
 try {
   const exists = fs.existsSync(testFile);
   console.log(`- Can access ${testFile}:`, exists ? 'Yes' : 'No');
-  
+
   if (exists) {
     const content = fs.readFileSync(testFile, 'utf8');
     console.log(`- File content length: ${content.length} characters`);
