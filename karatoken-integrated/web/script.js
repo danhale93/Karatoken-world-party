@@ -179,9 +179,12 @@
   function createVideoElement(video) {
     const div = document.createElement('div');
     div.className = 'video-result';
+    div.setAttribute('tabindex', '0');
+    div.setAttribute('role', 'button');
+    div.setAttribute('aria-label', `Select video: ${video.title} by ${video.channel || 'Unknown'}`);
     div.innerHTML = `
       <div class="video-thumbnail">
-        <img src="${video.thumbnail}" alt="${video.title}" loading="lazy">
+        <img src="${video.thumbnail}" alt="" aria-hidden="true" loading="lazy">
         <span class="duration">${formatDuration(video.duration)}</span>
       </div>
       <div class="video-details">
@@ -192,11 +195,18 @@
         </div>
       </div>
     `;
-    div.addEventListener('click', () => {
+    const selectVideo = () => {
       ytUrlInput.value = video.url;
       // Auto-select this video in the list
       document.querySelectorAll('.video-result').forEach(el => el.classList.remove('selected'));
       div.classList.add('selected');
+    };
+    div.addEventListener('click', selectVideo);
+    div.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selectVideo();
+      }
     });
     return div;
   }
