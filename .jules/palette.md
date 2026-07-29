@@ -9,3 +9,7 @@
 ## 2025-07-28 - Keyboard Submission Patterns and Consistent Loading Feedback
 **Learning:** Forcing users to switch from keyboard to mouse solely to submit a form or trigger a search violates standard web expectations and keyboard accessibility. Additionally, asynchronous operations should consistently leverage pre-defined loading UI styles (such as '.button-loading') along with 'aria-busy' attributes to keep screen readers and visual users informed of background tasks.
 **Action:** Always attach keypress listeners for 'Enter' on form inputs to auto-trigger the associated submission handlers, and use uniform button-loading classes paired with aria-busy attributes across all async buttons.
+
+## 2025-07-29 - Keyboard Event Listeners for Input Submission
+**Learning:** Utilizing the deprecated `'keypress'` event listener in form search fields restricts proper keyboard submission in modern web browsers and lacks full accessibility support. Transitioning to `'keydown'` listeners ensures cross-browser accessibility and seamless execution of form actions when pressing the 'Enter' key.
+**Action:** Always prefer the modern, standardized `'keydown'` event over the deprecated `'keypress'` event when binding 'Enter' key listeners to form inputs.

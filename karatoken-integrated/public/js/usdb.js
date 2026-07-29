@@ -64,7 +64,7 @@ class USDBSearch {
         
         document.getElementById('usdbSearchBtn').addEventListener('click', () => this.search());
         document.getElementById('usdbSelectBtn').addEventListener('click', () => this.selectCurrentSong());
-        this.searchInput.addEventListener('keypress', (e) => {
+        this.searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') this.search();
         });
     }
