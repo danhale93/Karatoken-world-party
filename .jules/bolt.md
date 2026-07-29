@@ -17,3 +17,7 @@
 ## 2026-07-27 - High-Performance Audio Processing with Typed Arrays in JS/TS
 **Learning:** Audio processing hot paths can suffer extreme latency and garbage-collection pressure from redundant array allocations (like duplicating original signals) and slow element-by-element copy loops. Starting loops at non-zero offsets can eliminate inside-loop conditional checks (avoiding CPU branch instructions completely), and utilizing native `.set()` copies data at C++ speed (comparable to `memcpy`).
 **Action:** Never allocate duplicate array buffers for unmodified "dry" reference signals; start processing loops at relevant delay/offset bounds to eliminate branching, and use `.set()` for high-performance block memory copying.
+
+## 2026-07-28 - Caching Stateless Native/JS Analyzer Instances to Prevent Hot-Path Allocations
+**Learning:** Re-instantiating stateless objects that allocate heavy temporary sub-arrays/buffers (like `PitchDetector.forFloat32Array(windowSize)` from the `pitchy` library) inside hot-path function calls causes massive garbage collection pressure and CPU initialization overhead. Caching these instances by configuration properties is 100% safe and extremely performant.
+**Action:** Always cache stateless analysis and processing objects (such as pitch detectors, classifiers, or DSP blocks) at the module level when configuration properties are constant or finite, rather than recreating them inside hot loops or recurring functions.
