@@ -191,17 +191,23 @@
     div.className = 'video-result';
     div.setAttribute('tabindex', '0');
     div.setAttribute('role', 'button');
-    div.setAttribute('aria-label', `Select video: ${video.title} by ${video.channel || 'Unknown'}`);
+    // Sanitize values for security attributes and innerHTML to prevent DOM-based XSS
+    const safeTitle = escapeHTML(video.title);
+    const safeChannel = escapeHTML(video.channel || 'Unknown');
+    const safeThumbnail = escapeHTML(video.thumbnail);
+    const safeDuration = escapeHTML(formatDuration(video.duration));
+
+    div.setAttribute('aria-label', `Select video: ${safeTitle} by ${safeChannel}`);
     div.innerHTML = `
       <div class="video-thumbnail">
-        <img src="${video.thumbnail}" alt="" aria-hidden="true" loading="lazy">
-        <span class="duration">${formatDuration(video.duration)}</span>
+        <img src="${safeThumbnail}" alt="" aria-hidden="true" loading="lazy">
+        <span class="duration">${safeDuration}</span>
       </div>
       <div class="video-details">
-        <h4 class="video-title">${escapeHTML(video.title)}</h4>
+        <h4 class="video-title">${safeTitle}</h4>
         <div class="video-meta">
-          <span class="channel">${escapeHTML(video.channel || 'Unknown')}</span>
-          <span class="duration">${escapeHTML(formatDuration(video.duration))}</span>
+          <span class="channel">${safeChannel}</span>
+          <span class="duration">${safeDuration}</span>
         </div>
       </div>
     `;
