@@ -7,3 +7,7 @@
 ## 2026-07-26 - Bootstrap Tab Concurrency & Aria Description of Dynamically Generated Inputs
 **Learning:** Initializing multiple tab panes with the `show active` class simultaneously on load causes them to render concurrently, resulting in overlapping elements, layout clashing, and broken accessibility trees. Dynamically generated search inputs must possess explicit `aria-label` attributes to remain legible to assistive technologies.
 **Action:** Always confirm only the default tab pane contains the active classes on render, and enforce explicit `aria-label` or `id`-label pairing on all dynamically instantiated interactive controls.
+
+## 2026-07-29 - Keyboard Event Listeners for Input Submission
+**Learning:** Utilizing the deprecated `'keypress'` event listener in form search fields restricts proper keyboard submission in modern web browsers and lacks full accessibility support. Transitioning to `'keydown'` listeners ensures cross-browser accessibility and seamless execution of form actions when pressing the 'Enter' key.
+**Action:** Always prefer the modern, standardized `'keydown'` event over the deprecated `'keypress'` event when binding 'Enter' key listeners to form inputs.

@@ -29,7 +29,7 @@ class YouTubeSearch {
         this.playerContainer = document.getElementById('youtubePlayer');
         
         document.getElementById('youtubeSearchBtn').addEventListener('click', () => this.search());
-        this.searchInput.addEventListener('keypress', (e) => {
+        this.searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') this.search();
         });
 
