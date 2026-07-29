@@ -82,6 +82,23 @@ describe('Pitch Detection Service', () => {
       const pitches = detectPitch(audioBuffer);
       expect(pitches.every(p => p === 0)).toBe(true);
     });
+
+    it('should reuse the cached detector instance across consecutive calls and yield identical results', () => {
+      const sampleRate = 44100;
+      const testFreq = 440;
+      const audioBuffer1 = createMockAudioBuffer(sampleRate, sampleRate, testFreq);
+      const audioBuffer2 = createMockAudioBuffer(sampleRate, sampleRate * 2, testFreq);
+
+      // First run (populates cache)
+      const pitches1 = detectPitch(audioBuffer1, 2048);
+      // Second run (reuses cached detector)
+      const pitches2 = detectPitch(audioBuffer2, 2048);
+
+      expect(pitches1.length).toBeGreaterThan(0);
+      expect(pitches2.length).toBeGreaterThan(0);
+      expect(pitches1[0]).toBe(440);
+      expect(pitches2[0]).toBe(440);
+    });
   });
 
   describe('analyzePitch', () => {

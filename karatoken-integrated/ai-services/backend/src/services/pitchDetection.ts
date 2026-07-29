@@ -9,13 +9,19 @@ export interface PitchAnalysis {
   pitchStability: number; // Lower is more stable (standard deviation)
 }
 
+const detectorCache = new Map<number, PitchDetector<Float32Array>>();
+
 export function detectPitch(audioBuffer: AudioBuffer, windowSize = 2048): number[] {
   const sampleRate = audioBuffer.sampleRate;
   const channelData = audioBuffer.getChannelData(0);
   const pitches: number[] = [];
 
-  // Create a pitch detector for the given sample rate
-  const detector = PitchDetector.forFloat32Array(windowSize);
+  // Retrieve PitchDetector from cache, or instantiate and cache if missing
+  let detector = detectorCache.get(windowSize);
+  if (!detector) {
+    detector = PitchDetector.forFloat32Array(windowSize);
+    detectorCache.set(windowSize, detector);
+  }
   const hopSize = Math.floor(windowSize / 2);
 
   // Process the audio in chunks
