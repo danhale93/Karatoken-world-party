@@ -1,15 +1,17 @@
-## 2025-07-24 - Semantic Label Associations and Keyboard Shortcut Visualizations
-**Learning:** In multi-section forms, missing `for` associations on `<label>` elements make screen-readers less effective and reduce click target sizes. Additionally, background keyboard shortcuts implemented in JS should always be visually advertised on the primary buttons using `<kbd>` tags to bridge the gap between keyboard navigators and mouse users.
-**Action:** Always verify all `<label>` tags have explicit `for` bindings matching the control IDs, and display a subtle inline keyboard badge like `<kbd class="kbd-badge">` next to the button text when background listeners exist.
+# Palette's Journal - Karatoken World Party
 
-## 2025-07-27 - Utilizing Pre-defined Button Loading States and ARIA Attributes
-**Learning:** Found pre-defined CSS loading state classes (`.button-loading`) that were left unused on core asynchronous buttons. Applying `.button-loading` combined with standard accessibility roles (`aria-busy="true"` and `disabled`) on active health checks, callback triggers, and heavy backend jobs (e.g., genre swap) is a highly repeatable and cohesive UX/a11y improvement for this design system.
-**Action:** When working with async actions, always search for existing `.button-loading` class rules in styles and map them cleanly to button triggers along with `aria-busy` and disabling state management.
+## 2026-07-23 - Focused Focus-Visible & Semantic Linkages
+**Learning:** Overwriting default focus indicators with `outline: none;` or `box-shadow` without a proper keyboard-only `:focus-visible` fallback completely breaks keyboard and screen reader accessibility, rendering pages unusable for assistive technologies. Pairing elements cleanly via semantic `<label for="...">` attributes immediately improves the accessibility tree.
+**Action:** Always verify all `<label>` tags have appropriate matching `for` associations, and establish robust high-contrast `:focus-visible` outlines whenever touching an interactive component's design.
 
-## 2025-07-28 - Keyboard Submission Patterns and Consistent Loading Feedback
-**Learning:** Forcing users to switch from keyboard to mouse solely to submit a form or trigger a search violates standard web expectations and keyboard accessibility. Additionally, asynchronous operations should consistently leverage pre-defined loading UI styles (such as '.button-loading') along with 'aria-busy' attributes to keep screen readers and visual users informed of background tasks.
-**Action:** Always attach keypress listeners for 'Enter' on form inputs to auto-trigger the associated submission handlers, and use uniform button-loading classes paired with aria-busy attributes across all async buttons.
+## 2026-07-26 - Bootstrap Tab Concurrency & Aria Description of Dynamically Generated Inputs
+**Learning:** Initializing multiple tab panes with the `show active` class simultaneously on load causes them to render concurrently, resulting in overlapping elements, layout clashing, and broken accessibility trees. Dynamically generated search inputs must possess explicit `aria-label` attributes to remain legible to assistive technologies.
+**Action:** Always confirm only the default tab pane contains the active classes on render, and enforce explicit `aria-label` or `id`-label pairing on all dynamically instantiated interactive controls.
 
-## 2025-07-29 - Keyboard Event Listeners for Input Submission
+## 2026-07-29 - Keyboard Event Listeners for Input Submission
 **Learning:** Utilizing the deprecated `'keypress'` event listener in form search fields restricts proper keyboard submission in modern web browsers and lacks full accessibility support. Transitioning to `'keydown'` listeners ensures cross-browser accessibility and seamless execution of form actions when pressing the 'Enter' key.
 **Action:** Always prefer the modern, standardized `'keydown'` event over the deprecated `'keypress'` event when binding 'Enter' key listeners to form inputs.
+
+## 2026-07-30 - Interactive Copy to Clipboard Micro-UX in Developer Previews
+**Learning:** In developer-facing preview tools, manually selecting and copying raw text outputs (like LRC lyrics) is repetitive, frustrating, and prone to selection errors. Introducing an accessible, key-navigable `<button>` with a copy icon, proper ARIA labels, and a temporary "Copied!" text/visual transition (e.g., success state feedback) significantly reduces interaction friction.
+**Action:** When displaying raw generated code, lyrics, or logs, always provide an inline Copy button with ARIA attributes and a 2-second temporary success text feedback loop.
