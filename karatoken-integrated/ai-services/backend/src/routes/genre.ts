@@ -136,6 +136,19 @@ async function runGenreSwap(job: Job) {
       if (!fs.existsSync(localAudioPath)) {
         throw new Error(`Local file not found: ${audioUrl}`);
       }
+      // Ensure the path is actually a regular file and not a directory to prevent arbitrary directory manipulation
+      const stat = fs.statSync(localAudioPath);
+      if (!stat.isFile()) {
+        throw new Error('Access denied: Path is not a regular file');
+      }
+      // Ensure the file has a valid audio extension to prevent no-op replacements overwriting critical project files
+      const allowedExtensions = ['.mp3', '.wav', '.webm', '.ogg', '.m4a', '.aac', '.flac'];
+      const ext = path.extname(localAudioPath).toLowerCase();
+      if (!allowedExtensions.includes(ext)) {
+        throw new Error(
+          'Access denied: File must be a valid audio file (.mp3, .wav, .webm, .ogg, .m4a, .aac, .flac)'
+        );
+      }
     } else {
       // Simulate download
       localAudioPath = path.join(process.cwd(), 'tmp', `download_${job.id}.mp3`);

@@ -1,3 +1,8 @@
+## 2026-08-01 - Arbitrary File Overwrite via Extension Suffix Bypass
+**Vulnerability:** In `ai-services/backend/src/routes/genre.ts`, the background task used `localAudioPath.replace('.mp3', '_instr.mp3')` to define temporary file names. When a local path for a non-audio file (e.g. `package.json`) was supplied as `audioUrl`, the replacement failed (became a no-op) and led to the system overwriting the original file (e.g., `package.json`) with `'dummy instrumental'` content.
+**Learning:** Suffix-replacement on non-matching strings is a no-op, which can allow the source file path to be used as the destination file path, overwriting critical files.
+**Prevention:** Verify that the target path is a regular file using `fs.statSync().isFile()`, and restrict files to a strict whitelist of valid audio extensions (`.mp3`, `.wav`, etc.) to prevent no-op replacement conditions.
+
 ## 2026-07-29 - DOM-based XSS via Unsanitized Metadata in Video Card Renderer
 **Vulnerability:** In `web/script.js`, dynamic YouTube video metadata (`video.thumbnail`, `video.title`, `video.channel`) returned by search APIs was directly interpolated into the `img src` attribute, outer `aria-label` attribute, and dynamic `innerHTML` blocks inside `createVideoElement` without escaping. This allowed a malicious API payload to break out of attributes and execute arbitrary JS, leading to DOM-based Cross-Site Scripting.
 **Learning:** Simply escaping some elements' text content is insufficient if other parameters like URLs, attributes, or image sources remain unescaped inside raw HTML strings dynamically parsed by `innerHTML`.
