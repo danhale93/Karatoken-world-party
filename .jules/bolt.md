@@ -21,3 +21,11 @@
 ## 2026-07-28 - Caching Stateless Native/JS Analyzer Instances to Prevent Hot-Path Allocations
 **Learning:** Re-instantiating stateless objects that allocate heavy temporary sub-arrays/buffers (like `PitchDetector.forFloat32Array(windowSize)` from the `pitchy` library) inside hot-path function calls causes massive garbage collection pressure and CPU initialization overhead. Caching these instances by configuration properties is 100% safe and extremely performant.
 **Action:** Always cache stateless analysis and processing objects (such as pitch detectors, classifiers, or DSP blocks) at the module level when configuration properties are constant or finite, rather than recreating them inside hot loops or recurring functions.
+
+## 2026-07-29 - Precalculating Linear Amplitude Thresholds in Audio Compressor Loops
+**Learning:** Checking compression triggering using decibels (`envDb > threshold`) inside high-frequency audio sample loops requires computing expensive transcendental functions (`Math.log10` and `Math.pow`) for every single sample. Precalculating the triggering threshold in linear amplitude scale (`thresholdEnv = Math.pow(10, threshold / 20)`) outside the loop allows the code to completely bypass these operations on all quiet or non-triggering samples.
+**Action:** When designing dynamic range processors, always convert threshold levels to linear scale outside the hot loop to bypass decibel/exponential calculations on non-triggering input samples.
+
+## 2026-07-30 - Simplifying IIR Filter Equations and Extracting Subtraction Operations
+**Learning:** Recursive Infinite Impulse Response (IIR) filtering loops often process millions of audio samples. Re-calculating constant term coefficients (such as subtraction `1 - alpha`) inside the loop wastes CPU instructions. Extracting constant math outside the loop and simplifying the recursive formula using standard algebra reduces active multiplication, subtraction, and register operations inside the loop.
+**Action:** Precalculate all static algebraic factors outside the processing loop and simplify recursive filtering formulas to minimize CPU arithmetic and instruction cycles per iteration.

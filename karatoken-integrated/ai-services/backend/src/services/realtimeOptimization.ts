@@ -273,10 +273,13 @@ export class AudioProcessor {
     let x1 = 0;
     let y1 = 0;
     const alpha = 0.1; // Smoothing factor
+    // ⚡ Bolt Optimization: Precompute (1 - alpha) outside the loop to avoid subtraction and optimize multiplications
+    const beta = 1 - alpha;
 
     for (let i = 0; i < audioData.length; i++) {
       const x = audioData[i];
-      const y = alpha * x + (1 - alpha) * x1 + (1 - alpha) * y1;
+      // ⚡ Bolt Optimization: Simplify floating point arithmetic to reduce arithmetic instructions inside the hot loop
+      const y = alpha * x + beta * (x1 + y1);
       result[i] = y * boost;
       x1 = x;
       y1 = y;
@@ -305,6 +308,11 @@ export class AudioProcessor {
     const attackCoef = Math.exp(-1 / (this.sampleRate * attack));
     const releaseCoef = Math.exp(-1 / (this.sampleRate * release));
 
+    // ⚡ Bolt Optimization: Precalculate ratio factor and linear amplitude threshold outside the loop
+    // to bypass slow, redundant floating-point transcendental functions (Math.log10, Math.pow) inside the loop.
+    const ratioFactor = 1 - 1 / ratio;
+    const thresholdEnv = Math.pow(10, threshold / 20);
+
     for (let i = 0; i < audioData.length; i += 1) {
       const envIn = Math.abs(audioData[i]);
 
@@ -314,12 +322,12 @@ export class AudioProcessor {
         envelope = releaseCoef * envelope + (1 - releaseCoef) * envIn;
       }
 
-      // Convert to dB
-      const envDb = 20 * Math.log10(envelope);
-
       // Apply compression
-      if (envDb > threshold) {
-        const gainDb = (threshold - envDb) * (1 - 1 / ratio);
+      // ⚡ Bolt Optimization: Bypassing expensive Math.log10 and Math.pow when envelope <= thresholdEnv
+      if (envelope > thresholdEnv) {
+        // Convert to dB
+        const envDb = 20 * Math.log10(envelope);
+        const gainDb = (threshold - envDb) * ratioFactor;
         result[i] = audioData[i] * Math.pow(10, gainDb / 20);
       } else {
         result[i] = audioData[i];
