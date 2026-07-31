@@ -273,10 +273,13 @@ export class AudioProcessor {
     let x1 = 0;
     let y1 = 0;
     const alpha = 0.1; // Smoothing factor
+    // ⚡ Bolt Optimization: Precompute (1 - alpha) outside the loop to avoid subtraction and optimize multiplications
+    const beta = 1 - alpha;
 
     for (let i = 0; i < audioData.length; i++) {
       const x = audioData[i];
-      const y = alpha * x + (1 - alpha) * x1 + (1 - alpha) * y1;
+      // ⚡ Bolt Optimization: Simplify floating point arithmetic to reduce arithmetic instructions inside the hot loop
+      const y = alpha * x + beta * (x1 + y1);
       result[i] = y * boost;
       x1 = x;
       y1 = y;
