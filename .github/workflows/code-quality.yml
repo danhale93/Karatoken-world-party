@@ -24,6 +24,8 @@ jobs:
           cache-dependency-path: karatoken-integrated/ai-services/backend/package-lock.json
       
       - name: Install dependencies
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm ci --legacy-peer-deps
         
       - name: Run ESLint
@@ -49,6 +51,8 @@ jobs:
           cache-dependency-path: karatoken-integrated/ai-services/backend/package-lock.json
           
       - name: Install dependencies
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm ci --legacy-peer-deps
         
       - name: Run tests with coverage
