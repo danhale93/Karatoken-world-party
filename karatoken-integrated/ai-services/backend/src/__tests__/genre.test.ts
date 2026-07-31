@@ -65,6 +65,48 @@ describe('Genre Swap API', () => {
       expect(statusResponse.body.job.status).toBe('failed');
       expect(statusResponse.body.job.error).toBe('Access denied: Invalid file path');
     });
+
+    it('should fail background job when a non-audio file is supplied to prevent arbitrary file overwrite', async () => {
+      const createResponse = await request(server).post('/api/genre/swap').send({
+        audioUrl: 'package.json',
+        targetGenre: 'rock',
+        karaokeMode: true,
+      });
+
+      expect(createResponse.status).toBe(200);
+      expect(createResponse.body).toHaveProperty('ok', true);
+      const { jobId } = createResponse.body;
+
+      // Wait for background job execution
+      await new Promise(resolve => setTimeout(resolve, 1200));
+
+      const statusResponse = await request(server).get(`/api/genre/status/${jobId}`);
+      expect(statusResponse.status).toBe(200);
+      expect(statusResponse.body.job.status).toBe('failed');
+      expect(statusResponse.body.job.error).toContain(
+        'Access denied: File must be a valid audio file'
+      );
+    });
+
+    it('should fail background job when a directory is supplied as audioUrl', async () => {
+      const createResponse = await request(server).post('/api/genre/swap').send({
+        audioUrl: 'src',
+        targetGenre: 'rock',
+        karaokeMode: true,
+      });
+
+      expect(createResponse.status).toBe(200);
+      expect(createResponse.body).toHaveProperty('ok', true);
+      const { jobId } = createResponse.body;
+
+      // Wait for background job execution
+      await new Promise(resolve => setTimeout(resolve, 1200));
+
+      const statusResponse = await request(server).get(`/api/genre/status/${jobId}`);
+      expect(statusResponse.status).toBe(200);
+      expect(statusResponse.body.job.status).toBe('failed');
+      expect(statusResponse.body.job.error).toContain('Access denied: Path is not a regular file');
+    });
   });
 
   describe('GET /api/genre/status/:jobId', () => {
