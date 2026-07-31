@@ -308,9 +308,9 @@ export class AudioProcessor {
     const attackCoef = Math.exp(-1 / (this.sampleRate * attack));
     const releaseCoef = Math.exp(-1 / (this.sampleRate * release));
 
-    // ⚡ Bolt Optimization: Precalculate ratio factor and linear amplitude threshold outside the loop
-    // to bypass slow, redundant floating-point transcendental functions (Math.log10, Math.pow) inside the loop.
-    const ratioFactor = 1 - 1 / ratio;
+    // ⚡ Bolt Optimization: Precompute the threshold amplitude in linear scale outside the loop.
+    // By checking if envelope > thresholdEnv, we can completely bypass heavy transcendental
+    // calculations (Math.log10 and Math.pow) for all non-triggering samples.
     const thresholdEnv = Math.pow(10, threshold / 20);
 
     for (let i = 0; i < audioData.length; i += 1) {
@@ -322,12 +322,10 @@ export class AudioProcessor {
         envelope = releaseCoef * envelope + (1 - releaseCoef) * envIn;
       }
 
-      // Apply compression
-      // ⚡ Bolt Optimization: Bypassing expensive Math.log10 and Math.pow when envelope <= thresholdEnv
+      // ⚡ Bolt Optimization: Avoid expensive log10 and pow calculations unless the envelope is above thresholdEnv
       if (envelope > thresholdEnv) {
-        // Convert to dB
         const envDb = 20 * Math.log10(envelope);
-        const gainDb = (threshold - envDb) * ratioFactor;
+        const gainDb = (threshold - envDb) * (1 - 1 / ratio);
         result[i] = audioData[i] * Math.pow(10, gainDb / 20);
       } else {
         result[i] = audioData[i];

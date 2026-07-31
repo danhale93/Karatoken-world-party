@@ -125,7 +125,16 @@
         <div class="row">
           <audio id="genre-audio" controls class="audio-player"></audio>
         </div>
-        <pre id="genre-lrc" class="output lrc-output">LRC will appear here…</pre>
+        <div class="row lrc-section">
+          <div class="lrc-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <label for="genre-lrc" style="margin-bottom: 0;">LRC Lyrics Preview</label>
+            <button id="btn-copy-lrc" class="button button-sm button-outline" style="display: none;" aria-label="Copy LRC lyrics to clipboard">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.25rem;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span id="copy-text">Copy LRC</span>
+            </button>
+          </div>
+          <pre id="genre-lrc" class="output lrc-output" tabindex="0" aria-label="LRC lyrics preview output">LRC will appear here…</pre>
+        </div>
       </section>
 
       <section class="card">
