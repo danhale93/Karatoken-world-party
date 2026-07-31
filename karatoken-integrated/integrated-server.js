@@ -11,6 +11,43 @@ const app = express();
 app.disable('x-powered-by');
 const PORT = 3100;
 
+// Security headers middleware to mitigate basic web vulnerabilities
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
+// Simple, lightweight in-memory rate limiter to protect sensitive or heavy endpoints from Denial of Service (DoS)
+const rateLimits = new Map();
+function rateLimiter(windowMs, maxRequests) {
+  return (req, res, next) => {
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const now = Date.now();
+
+    if (!rateLimits.has(ip)) {
+      rateLimits.set(ip, []);
+    }
+
+    let timestamps = rateLimits.get(ip);
+    // Filter timestamps older than the window
+    timestamps = timestamps.filter(time => now - time < windowMs);
+
+    if (timestamps.length >= maxRequests) {
+      return res.status(429).json({
+        ok: false,
+        error: 'Too many requests from this IP, please try again later.'
+      });
+    }
+
+    timestamps.push(now);
+    rateLimits.set(ip, timestamps);
+    next();
+  };
+}
+
 // Create HTTP server for Socket.IO
 const server = createServer(app);
 const io = new Server(server, {
@@ -115,10 +152,10 @@ app.get('/health', (req, res) => {
 });
 
 // YouTube API endpoints
-app.get('/api/youtube/search', async (req, res) => {
+app.get('/api/youtube/search', rateLimiter(60000, 60), async (req, res) => {
   const query = req.query.q;
-  if (!query) {
-    return res.status(400).json({ ok: false, error: 'Missing search query' });
+  if (!query || typeof query !== 'string') {
+    return res.status(400).json({ ok: false, error: 'Missing or invalid search query' });
   }
 
   try {
@@ -164,10 +201,16 @@ app.get('/api/youtube/search', async (req, res) => {
   }
 });
 
-app.post('/api/youtube/download', async (req, res) => {
+app.post('/api/youtube/download', rateLimiter(60000, 15), async (req, res) => {
   const { url } = req.body;
-  if (!url) {
-    return res.status(400).json({ ok: false, error: 'Missing YouTube URL' });
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ ok: false, error: 'Missing or invalid YouTube URL' });
+  }
+
+  // Validate YouTube URL to prevent SSRF and arbitrary parameter processing
+  const ytRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
+  if (!ytRegex.test(url)) {
+    return res.status(400).json({ ok: false, error: 'Invalid YouTube URL format' });
   }
 
   try {
@@ -192,7 +235,7 @@ app.post('/api/youtube/download', async (req, res) => {
 });
 
 // Genre Swap API
-app.post('/api/genre/swap', async (req, res) => {
+app.post('/api/genre/swap', rateLimiter(60000, 15), async (req, res) => {
   const { audioUrl, targetGenre, karaokeMode = true } = req.body;
 
   if (!audioUrl || !targetGenre) {
@@ -232,7 +275,7 @@ app.post('/api/genre/swap', async (req, res) => {
 });
 
 // Stylus Transfer API
-app.post('/api/stylus/transfer', async (req, res) => {
+app.post('/api/stylus/transfer', rateLimiter(60000, 15), async (req, res) => {
   const { contentUrl, styleGenre } = req.body;
 
   if (!contentUrl || !styleGenre) {

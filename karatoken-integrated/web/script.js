@@ -23,6 +23,8 @@
   const genreLrcOut = document.getElementById('genre-lrc');
   const audioPreviewEl = document.getElementById('audio-preview');
   const audioErrorEl = document.getElementById('audio-error');
+  const copyLrcBtn = document.getElementById('btn-copy-lrc');
+  const copyText = document.getElementById('copy-text');
 
   // Add keyboard shortcuts
   document.addEventListener('keydown', (e) => {
@@ -66,6 +68,27 @@
     if (e.key === 'Enter') {
       e.preventDefault();
       sendCallback();
+    }
+  });
+
+  // Copy LRC lyrics to clipboard when copy button is clicked
+  copyLrcBtn?.addEventListener('click', async () => {
+    const text = genreLrcOut?.textContent;
+    if (!text || text === 'LRC will appear here…' || text === 'Failed to load LRC') return;
+    try {
+      await navigator.clipboard.writeText(text);
+      if (copyText) {
+        copyText.textContent = 'Copied!';
+      }
+      copyLrcBtn.classList.add('success');
+      setTimeout(() => {
+        if (copyText) {
+          copyText.textContent = 'Copy LRC';
+        }
+        copyLrcBtn.classList.remove('success');
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
     }
   });
 
@@ -487,9 +510,11 @@
                 const lrcText = await lrcRes.text();
                 genreLrcOut.textContent = lrcText;
                 genreLrcOut.style.display = '';
+                if (copyLrcBtn) copyLrcBtn.style.display = 'inline-flex';
               } catch (_) {
                 genreLrcOut.textContent = 'Failed to load LRC';
                 genreLrcOut.style.display = '';
+                if (copyLrcBtn) copyLrcBtn.style.display = 'none';
               }
             }
             break;
@@ -555,6 +580,7 @@
     updateProgress(0, 'Starting...', 'Preparing to process your request');
     genreAudioEl.style.display = 'none';
     genreLrcOut.style.display = 'none';
+    if (copyLrcBtn) copyLrcBtn.style.display = 'none';
 
     try {
       // Validate URL first
