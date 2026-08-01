@@ -15,3 +15,7 @@
 ## 2026-07-30 - Interactive Copy to Clipboard Micro-UX in Developer Previews
 **Learning:** In developer-facing preview tools, manually selecting and copying raw text outputs (like LRC lyrics) is repetitive, frustrating, and prone to selection errors. Introducing an accessible, key-navigable `<button>` with a copy icon, proper ARIA labels, and a temporary "Copied!" text/visual transition (e.g., success state feedback) significantly reduces interaction friction.
 **Action:** When displaying raw generated code, lyrics, or logs, always provide an inline Copy button with ARIA attributes and a 2-second temporary success text feedback loop.
+
+## 2026-08-01 - Component-Scoped Selectors over Document-wide Lookups
+**Learning:** Using document-wide queries like `document.getElementById` inside dynamic or reusable components breaks event listener binding and causes DOM collisions if multiple instances are instantiated or if elements exist but are hidden. Scoping DOM queries locally via `this.container.querySelector` prevents global selector leaks and guarantees highly reliable binding.
+**Action:** Always prefer scoped element retrieval via `this.container.querySelector` or event delegation over document-wide lookups within reusable JavaScript components.
