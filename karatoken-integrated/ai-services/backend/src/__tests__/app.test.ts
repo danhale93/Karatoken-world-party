@@ -38,6 +38,17 @@ describe('App Endpoints', () => {
     });
   });
 
+  describe('Security Headers', () => {
+    it('should set security headers and disable X-Powered-By', async () => {
+      const response = await request(server).get('/health');
+      expect(response.headers['x-powered-by']).toBeUndefined();
+      expect(response.headers['x-content-type-options']).toBe('nosniff');
+      expect(response.headers['x-frame-options']).toBe('DENY');
+      expect(response.headers['x-xss-protection']).toBe('1; mode=block');
+      expect(response.headers['referrer-policy']).toBe('strict-origin-when-cross-origin');
+    });
+  });
+
   describe('GET /dl/*', () => {
     it('should download a valid file successfully', async () => {
       const response = await request(server).get('/dl/test-download-file.txt');
