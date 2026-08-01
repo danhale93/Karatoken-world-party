@@ -13,6 +13,16 @@ import youtubeRouter from './routes/youtube';
 dotenv.config();
 
 const app: Express = express();
+app.disable('x-powered-by');
+
+// Security headers middleware to mitigate basic web vulnerabilities
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
