@@ -29,8 +29,13 @@ class USDBSearch {
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <h6>Lyrics Preview</h6>
-                                    <div id="usdbLyricsPreview" class="lyrics-preview"></div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="m-0">Lyrics Preview</h6>
+                                        <button id="usdbCopyLyricsBtn" class="btn btn-sm btn-outline-secondary" aria-label="Copy USDB lyrics preview to clipboard">
+                                            <i class="bi bi-clipboard" id="usdbCopyIcon"></i> <span id="usdbCopyText">Copy</span>
+                                        </button>
+                                    </div>
+                                    <div id="usdbLyricsPreview" class="lyrics-preview" tabindex="0" aria-label="USDB lyrics preview output"></div>
                                 </div>
                                 <div class="col-md-6">
                                     <h6>Song Details</h6>
@@ -58,14 +63,36 @@ class USDBSearch {
             </div>
         `;
 
-        this.searchInput = document.getElementById('usdbSearchInput');
-        this.resultsContainer = document.getElementById('usdbResults');
-        this.previewContainer = document.getElementById('usdbPreview');
+        this.searchInput = this.container.querySelector('#usdbSearchInput');
+        this.resultsContainer = this.container.querySelector('#usdbResults');
+        this.previewContainer = this.container.querySelector('#usdbPreview');
         
-        document.getElementById('usdbSearchBtn').addEventListener('click', () => this.search());
-        document.getElementById('usdbSelectBtn').addEventListener('click', () => this.selectCurrentSong());
+        this.container.querySelector('#usdbSearchBtn').addEventListener('click', () => this.search());
+        this.container.querySelector('#usdbSelectBtn').addEventListener('click', () => this.selectCurrentSong());
         this.searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') this.search();
+        });
+
+        // Copy lyrics event listener with interactive feedback (using querySelector scoped to container)
+        const copyBtn = this.container.querySelector('#usdbCopyLyricsBtn');
+        copyBtn?.addEventListener('click', async () => {
+            if (this.currentSong && this.currentSong.preview) {
+                try {
+                    await navigator.clipboard.writeText(this.currentSong.preview);
+                    const copyIcon = this.container.querySelector('#usdbCopyIcon');
+                    const copyText = this.container.querySelector('#usdbCopyText');
+                    if (copyIcon && copyText) {
+                        copyIcon.className = 'bi bi-check-lg text-success';
+                        copyText.textContent = 'Copied!';
+                        setTimeout(() => {
+                            copyIcon.className = 'bi bi-clipboard';
+                            copyText.textContent = 'Copy';
+                        }, 2000);
+                    }
+                } catch (err) {
+                    console.error('Failed to copy text:', err);
+                }
+            }
         });
     }
 
@@ -168,15 +195,15 @@ class USDBSearch {
     showSongPreview(song) {
         this.currentSong = song;
         
-        // Update preview elements
-        document.getElementById('usdbSongTitle').textContent = song.title;
-        document.getElementById('usdbArtist').textContent = song.artist || '-';
-        document.getElementById('usdbGenre').textContent = song.genre || '-';
-        document.getElementById('usdbLanguage').textContent = song.language || '-';
-        document.getElementById('usdbYear').textContent = song.year || '-';
+        // Update preview elements scoped to the container
+        this.container.querySelector('#usdbSongTitle').textContent = song.title;
+        this.container.querySelector('#usdbArtist').textContent = song.artist || '-';
+        this.container.querySelector('#usdbGenre').textContent = song.genre || '-';
+        this.container.querySelector('#usdbLanguage').textContent = song.language || '-';
+        this.container.querySelector('#usdbYear').textContent = song.year || '-';
         
         // Format and display lyrics preview
-        const lyricsPreview = document.getElementById('usdbLyricsPreview');
+        const lyricsPreview = this.container.querySelector('#usdbLyricsPreview');
         if (song.preview) {
             const previewLines = song.preview.split('\n').slice(0, 5).join('\n');
             lyricsPreview.textContent = previewLines;
