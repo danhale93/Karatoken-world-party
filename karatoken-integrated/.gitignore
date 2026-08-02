@@ -82,3 +82,7 @@ blockchain/typechain-types/
 blockchain/coverage/
 blockchain/coverage.json
 blockchain/typechain/
+
+# Temporary and cache files
+**/tmp/
+**/.cache/
