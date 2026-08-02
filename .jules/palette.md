@@ -15,3 +15,7 @@
 ## 2026-07-30 - Interactive Copy to Clipboard Micro-UX in Developer Previews
 **Learning:** In developer-facing preview tools, manually selecting and copying raw text outputs (like LRC lyrics) is repetitive, frustrating, and prone to selection errors. Introducing an accessible, key-navigable `<button>` with a copy icon, proper ARIA labels, and a temporary "Copied!" text/visual transition (e.g., success state feedback) significantly reduces interaction friction.
 **Action:** When displaying raw generated code, lyrics, or logs, always provide an inline Copy button with ARIA attributes and a 2-second temporary success text feedback loop.
+
+## 2026-08-02 - Headless Permission Assertions & Aria Announcement for State Changes
+**Learning:** Modern Clipboard APIs (`navigator.clipboard.writeText`) are sandboxed and blocked by default in headless Chromium-based environments (like Playwright runners), resulting in silent failures during test/verification cycles. Furthermore, when copy buttons change their text label dynamically, screen readers fail to notice the update unless the button possesses an explicit `aria-live="polite"` attribute and its `aria-label` is dynamically updated.
+**Action:** Always grant explicit `"clipboard-write"` permissions to browser contexts during visual/automated end-to-end tests, and always bind `aria-live="polite"` on state-shifting copy-to-clipboard buttons.
