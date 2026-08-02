@@ -4,6 +4,8 @@ import fs from 'fs';
 import path from 'path';
 import ytsr from 'ytsr';
 
+import { rateLimiter } from './rateLimiter';
+
 const router = express.Router();
 
 const DEFAULT_HEADERS = {
@@ -12,11 +14,17 @@ const DEFAULT_HEADERS = {
   'accept-language': 'en-US,en;q=0.9',
 };
 
-router.get('/search', async (req: Request, res: Response) => {
-  const q = (req.query.q || '').toString().trim();
-  if (!q) return res.status(400).json({ ok: false, error: 'Missing q' });
+router.get('/search', rateLimiter(60000, 60), async (req: Request, res: Response) => {
+  const q = req.query.q;
+  if (typeof q !== 'string') {
+    return res.status(400).json({ ok: false, error: 'Invalid or missing q parameter' });
+  }
+  const qTrimmed = q.trim();
+  if (!qTrimmed) {
+    return res.status(400).json({ ok: false, error: 'Missing q' });
+  }
   try {
-    const search = await ytsr(q, { limit: 10 });
+    const search = await ytsr(qTrimmed, { limit: 10 });
     const videos = (search.items || [])
       .filter(it => it.type === 'video')
       .map((v: any) => ({
@@ -33,10 +41,13 @@ router.get('/search', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/download', async (req: Request, res: Response) => {
+router.post('/download', rateLimiter(60000, 15), async (req: Request, res: Response) => {
   try {
-    const url = req.body && req.body.url ? String(req.body.url) : '';
-    if (!url || !ytdl.validateURL(url)) {
+    const url = req.body?.url;
+    if (typeof url !== 'string') {
+      return res.status(400).json({ ok: false, error: 'Invalid or missing url parameter' });
+    }
+    if (!ytdl.validateURL(url)) {
       return res.status(400).json({ ok: false, error: 'Invalid YouTube URL' });
     }
     const info = await ytdl.getInfo(url, { requestOptions: { headers: DEFAULT_HEADERS } });
