@@ -34,8 +34,9 @@ function downloadUrlToFile(url, dest, timeoutMs = 60000) {
 function toLrcTimestamp(seconds) {
   const m = Math.floor(seconds / 60);
   const s = seconds - m * 60;
-  // mm:ss.xx
-  return `${String(m).padStart(2, '0')}:${s.toFixed(2).padStart(5, '0')}`;
+  // ⚡ Bolt Optimization: Replacing generic padStart calls with conditional checks and fast native string slicing
+  // to avoid garbage collection and string allocation overhead in hot loops.
+  return `${m < 10 ? '0' + m : m}:${('0' + s.toFixed(2)).slice(-5)}`;
 }
 
 function srtToLrc(srtText) {
@@ -142,4 +143,4 @@ async function transcribeToLrc({ sourcePath, outDir }) {
   return lrcPath;
 }
 
-module.exports = { transcribeToLrc, srtToLrc, segmentsToLrc };
+module.exports = { transcribeToLrc, srtToLrc, segmentsToLrc, toLrcTimestamp };
