@@ -35,10 +35,19 @@ router.get('/search', async (req: Request, res: Response) => {
 
 router.post('/download', async (req: Request, res: Response) => {
   try {
-    const url = req.body && req.body.url ? String(req.body.url) : '';
-    if (!url || !ytdl.validateURL(url)) {
-      return res.status(400).json({ ok: false, error: 'Invalid YouTube URL' });
+    const url = req.body && req.body.url;
+
+    // Strict parameter type assertion to prevent Express Parameter Pollution & type confusion
+    if (!url || typeof url !== 'string') {
+      return res.status(400).json({ ok: false, error: 'Invalid or missing YouTube URL' });
     }
+
+    // Secure domain-constrained regex validation to prevent SSRF and arbitrary parameter processing
+    const ytRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
+    if (!ytRegex.test(url) || !ytdl.validateURL(url)) {
+      return res.status(400).json({ ok: false, error: 'Invalid YouTube URL format' });
+    }
+
     const info = await ytdl.getInfo(url, { requestOptions: { headers: DEFAULT_HEADERS } });
     const titleSafe = (info.videoDetails.title || 'audio')
       .replace(/[\\/:*?"<>|]/g, '_')

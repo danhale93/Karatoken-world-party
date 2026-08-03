@@ -77,4 +77,43 @@ describe('App Endpoints', () => {
       expect(response.body.error).toContain('Invalid path');
     });
   });
+
+  describe('POST /api/youtube/download Security', () => {
+    it('should return 400 for missing or invalid type URL (parameter pollution/type confusion)', async () => {
+      const response1 = await request(server)
+        .post('/api/youtube/download')
+        .send({ url: ['https://www.youtube.com/watch?v=dQw4w9WgXcQ'] });
+      expect(response1.status).toBe(400);
+      expect(response1.body).toHaveProperty('ok', false);
+      expect(response1.body.error).toBe('Invalid or missing YouTube URL');
+
+      const response2 = await request(server).post('/api/youtube/download').send({ url: 12345 });
+      expect(response2.status).toBe(400);
+      expect(response2.body).toHaveProperty('ok', false);
+      expect(response2.body.error).toBe('Invalid or missing YouTube URL');
+    });
+
+    it('should return 400 for non-YouTube or internal malicious URLs (SSRF prevention)', async () => {
+      const response1 = await request(server)
+        .post('/api/youtube/download')
+        .send({ url: 'http://localhost:3100/health' });
+      expect(response1.status).toBe(400);
+      expect(response1.body).toHaveProperty('ok', false);
+      expect(response1.body.error).toBe('Invalid YouTube URL format');
+
+      const response2 = await request(server)
+        .post('/api/youtube/download')
+        .send({ url: 'http://127.0.0.1.nip.io/health' });
+      expect(response2.status).toBe(400);
+      expect(response2.body).toHaveProperty('ok', false);
+      expect(response2.body.error).toBe('Invalid YouTube URL format');
+
+      const response3 = await request(server)
+        .post('/api/youtube/download')
+        .send({ url: 'https://attacker.com/malicious' });
+      expect(response3.status).toBe(400);
+      expect(response3.body).toHaveProperty('ok', false);
+      expect(response3.body.error).toBe('Invalid YouTube URL format');
+    });
+  });
 });
