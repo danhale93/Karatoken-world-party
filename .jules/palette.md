@@ -15,3 +15,7 @@
 ## 2026-07-30 - Interactive Copy to Clipboard Micro-UX in Developer Previews
 **Learning:** In developer-facing preview tools, manually selecting and copying raw text outputs (like LRC lyrics) is repetitive, frustrating, and prone to selection errors. Introducing an accessible, key-navigable `<button>` with a copy icon, proper ARIA labels, and a temporary "Copied!" text/visual transition (e.g., success state feedback) significantly reduces interaction friction.
 **Action:** When displaying raw generated code, lyrics, or logs, always provide an inline Copy button with ARIA attributes and a 2-second temporary success text feedback loop.
+
+## 2026-08-03 - Disconnected Class Interfaces & Fatal Browser Reference Failures
+**Learning:** Having method invocation references to functions that do not exist (like `getStatusClass` and `getJobActionsHtml`) completely crashes the frontend application's constructor and stops execution of all features. Ensuring every method on a client-side class resolves is vital to keeping interfaces active.
+**Action:** Always inspect the browser's console logs via automated verification scripts during development to intercept fatal `TypeError` and `ReferenceError` crashes immediately.
