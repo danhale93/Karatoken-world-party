@@ -13,10 +13,14 @@ const DEFAULT_HEADERS = {
 };
 
 router.get('/search', async (req: Request, res: Response) => {
-  const q = (req.query.q || '').toString().trim();
-  if (!q) return res.status(400).json({ ok: false, error: 'Missing q' });
+  const q = req.query.q;
+  if (!q || typeof q !== 'string') {
+    return res.status(400).json({ ok: false, error: 'Missing or invalid q parameter' });
+  }
+  const queryStr = q.trim();
+  if (!queryStr) return res.status(400).json({ ok: false, error: 'Missing q' });
   try {
-    const search = await ytsr(q, { limit: 10 });
+    const search = await ytsr(queryStr, { limit: 10 });
     const videos = (search.items || [])
       .filter(it => it.type === 'video')
       .map((v: any) => ({

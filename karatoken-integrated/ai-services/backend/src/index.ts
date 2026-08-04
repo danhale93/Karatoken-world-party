@@ -107,7 +107,16 @@ app.get('/dl/*', (req: Request, res: Response) => {
 app.get('/api/spotify/callback', (req: Request, res: Response) => {
   const { code, state, error } = req.query;
   if (error) {
+    if (typeof error !== 'string') {
+      return res.status(400).json({ ok: false, error: 'Invalid error parameter type' });
+    }
     return res.status(400).json({ ok: false, error });
+  }
+  if (code && typeof code !== 'string') {
+    return res.status(400).json({ ok: false, error: 'Invalid code parameter type' });
+  }
+  if (state && typeof state !== 'string') {
+    return res.status(400).json({ ok: false, error: 'Invalid state parameter type' });
   }
   return res.json({ ok: true, received: { code, state } });
 });
