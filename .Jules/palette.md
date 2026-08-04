@@ -15,3 +15,7 @@
 ## 2026-07-30 - Interactive Copy to Clipboard Micro-UX in Developer Previews
 **Learning:** In developer-facing preview tools, manually selecting and copying raw text outputs (like LRC lyrics) is repetitive, frustrating, and prone to selection errors. Introducing an accessible, key-navigable `<button>` with a copy icon, proper ARIA labels, and a temporary "Copied!" text/visual transition (e.g., success state feedback) significantly reduces interaction friction.
 **Action:** When displaying raw generated code, lyrics, or logs, always provide an inline Copy button with ARIA attributes and a 2-second temporary success text feedback loop.
+
+## 2026-07-31 - Safe State Transitions & Keyboard Shortcut Safety in Developer Previews
+**Learning:** Reusing alert/feedback classes like `.success` on small inline controls (like Copy buttons) can introduce heavy layout jank due to clashing box model definitions (e.g., margins/padding/display rules). Additionally, keyboard shortcuts (such as Ctrl+Enter) that trigger core operations must respect the button/form's validation-driven disabled states, preventing accidental empty submissions or premature UI state overrides.
+**Action:** For lightweight feedback transitions, apply targeted inline styling properties or separate scoped helper classes instead of global block-level alert style definitions, and explicitly assert button/input availability in all global shortcut listeners.
