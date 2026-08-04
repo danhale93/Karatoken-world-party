@@ -29,3 +29,7 @@
 ## 2026-07-30 - Simplifying IIR Filter Equations and Extracting Subtraction Operations
 **Learning:** Recursive Infinite Impulse Response (IIR) filtering loops often process millions of audio samples. Re-calculating constant term coefficients (such as subtraction `1 - alpha`) inside the loop wastes CPU instructions. Extracting constant math outside the loop and simplifying the recursive formula using standard algebra reduces active multiplication, subtraction, and register operations inside the loop.
 **Action:** Precalculate all static algebraic factors outside the processing loop and simplify recursive filtering formulas to minimize CPU arithmetic and instruction cycles per iteration.
+
+## 2026-07-31 - Avoid RegExp and Array/Object Allocations in Hot String Iteration/Parsing Loops
+**Learning:** Parsing text formats (like SRT to LRC) line-by-line using heavy RegExp, `.split()`, `.map(Number)`, and generic padding operations inside loops creates significant garbage collection pressure and CPU overhead. Using custom index scanning (`indexOf`, `substring`) and conditional native string slicing on a state-machine loop improves parsing throughput and corrects sub-second timestamp loss.
+**Action:** Use simple, low-overhead string searching/slicing functions instead of regexes or multi-pass string splits inside high-frequency iteration loops.

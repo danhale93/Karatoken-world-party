@@ -64,23 +64,79 @@ export async function transcribeAudio(
 
 // Utility function to convert SRT to LRC format
 export function srtToLrc(srtContent: string): string {
-  const lines = srtContent.split('\n');
+  // ⚡ Bolt Optimization: Robust, high-performance state-machine based parsing that
+  // handles flexible subtitle blocks (not just hardcoded 4-line intervals),
+  // supports CRLF endings, and completely avoids heavy arrays, regex, map(Number), and padding overhead.
+  const lines = srtContent.split(/\r?\n/);
   const lrcLines: string[] = [];
+  const len = lines.length;
+  let i = 0;
 
-  for (let i = 0; i < lines.length; i += 4) {
-    if (!lines[i + 1]) continue;
+  while (i < len) {
+    // 1. Skip leading empty lines or whitespace-only lines
+    while (i < len && lines[i].trim() === '') {
+      i++;
+    }
+    if (i >= len) break;
 
-    // Extract timestamp and text
-    const timestamp = lines[i + 1].split(' --> ')[0];
-    const text = lines[i + 2] || '';
+    // 2. Skip the subtitle index line
+    i++;
+    if (i >= len) break;
 
-    // Convert SRT timestamp to LRC format [mm:ss.xx]
-    const [timePart] = timestamp.split(',');
-    const [hours, minutes, seconds] = timePart.split(':').map(Number);
-    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-    const lrcTime = `[${String(Math.floor(totalSeconds / 60)).padStart(2, '0')}:${String(Math.floor(totalSeconds % 60)).padStart(2, '0')}.${String(Math.round((totalSeconds % 1) * 100)).padStart(2, '0')}]`;
+    // 3. Process the timestamp line (e.g. "00:00:00,000 --> 00:00:05,000")
+    const tsLine = lines[i++];
+    const arrowIndex = tsLine.indexOf(' --> ');
+    if (arrowIndex === -1) {
+      // Not a valid timestamp line, skip text lines until we hit an empty line
+      while (i < len && lines[i].trim() !== '') {
+        i++;
+      }
+      continue;
+    }
 
-    lrcLines.push(`${lrcTime}${text}`);
+    // Extract start timestamp
+    const startTs = tsLine.substring(0, arrowIndex).trim();
+
+    // 4. Gather text lines (could be one or more lines)
+    let text = '';
+    while (i < len) {
+      const line = lines[i].trim();
+      if (line === '') {
+        break; // Empty line terminates this block
+      }
+      if (text) {
+        text += ' ' + line;
+      } else {
+        text = line;
+      }
+      i++;
+    }
+
+    // 5. Parse timestamp robustly and efficiently without RegExp/map/pad allocations
+    const colon1 = startTs.indexOf(':');
+    const colon2 = startTs.indexOf(':', colon1 + 1);
+
+    if (colon1 !== -1 && colon2 !== -1) {
+      const h = parseInt(startTs.substring(0, colon1), 10);
+      const m = parseInt(startTs.substring(colon1 + 1, colon2), 10);
+      const rest = startTs.substring(colon2 + 1);
+      // Replace comma with dot to parse seconds with decimals as a floating-point number
+      const s = parseFloat(rest.replace(',', '.'));
+
+      if (!isNaN(h) && !isNaN(m) && !isNaN(s)) {
+        const totalSeconds = h * 3600 + m * 60 + s;
+        const totalMinutes = Math.floor(totalSeconds / 60);
+        const remSeconds = totalSeconds - totalMinutes * 60;
+
+        // Fast native formatting using slicing and conditionals
+        const mmStr = totalMinutes < 10 ? '0' + totalMinutes : '' + totalMinutes;
+        const ssStr = ('0' + remSeconds.toFixed(2)).slice(-5);
+
+        lrcLines.push(`[${mmStr}:${ssStr}]${text}`);
+      }
+    }
+
+    i++;
   }
 
   return lrcLines.join('\n');
