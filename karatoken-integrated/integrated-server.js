@@ -242,6 +242,10 @@ app.post('/api/genre/swap', rateLimiter(60000, 15), async (req, res) => {
     return res.status(400).json({ ok: false, error: 'Missing audioUrl or targetGenre' });
   }
 
+  if (typeof audioUrl !== 'string') {
+    return res.status(400).json({ ok: false, error: 'Invalid audioUrl' });
+  }
+
   // Validate targetGenre to prevent directory traversal / command injection risks
   if (typeof targetGenre !== 'string' || !/^[a-zA-Z0-9\s_-]+$/.test(targetGenre)) {
     return res.status(400).json({ ok: false, error: 'Invalid targetGenre' });
@@ -280,6 +284,10 @@ app.post('/api/stylus/transfer', rateLimiter(60000, 15), async (req, res) => {
 
   if (!contentUrl || !styleGenre) {
     return res.status(400).json({ ok: false, error: 'Missing contentUrl or styleGenre' });
+  }
+
+  if (typeof contentUrl !== 'string') {
+    return res.status(400).json({ ok: false, error: 'Invalid contentUrl' });
   }
 
   // Validate styleGenre to prevent directory traversal / command injection risks

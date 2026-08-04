@@ -116,4 +116,60 @@ describe('App Endpoints', () => {
       expect(response3.body.error).toBe('Invalid YouTube URL format');
     });
   });
+
+  describe('GET /api/youtube/search Parameter Validation', () => {
+    it('should return 400 for missing or invalid q parameter type (parameter pollution/type confusion)', async () => {
+      const response1 = await request(server)
+        .get('/api/youtube/search')
+        .query({ q: ['rock', 'pop'] });
+      expect(response1.status).toBe(400);
+      expect(response1.body).toHaveProperty('ok', false);
+      expect(response1.body.error).toBe('Missing or invalid q parameter');
+
+      const response2 = await request(server).get('/api/youtube/search');
+      expect(response2.status).toBe(400);
+      expect(response2.body).toHaveProperty('ok', false);
+      expect(response2.body.error).toBe('Missing or invalid q parameter');
+    });
+  });
+
+  describe('GET /api/spotify/callback Parameter Validation', () => {
+    it('should return 400 for invalid error parameter type', async () => {
+      const response = await request(server)
+        .get('/api/spotify/callback')
+        .query({ error: ['err1', 'err2'] });
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('ok', false);
+      expect(response.body.error).toBe('Invalid error parameter type');
+    });
+
+    it('should return 400 for invalid code parameter type', async () => {
+      const response = await request(server)
+        .get('/api/spotify/callback')
+        .query({ code: ['code1', 'code2'] });
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('ok', false);
+      expect(response.body.error).toBe('Invalid code parameter type');
+    });
+
+    it('should return 400 for invalid state parameter type', async () => {
+      const response = await request(server)
+        .get('/api/spotify/callback')
+        .query({ state: ['state1', 'state2'] });
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('ok', false);
+      expect(response.body.error).toBe('Invalid state parameter type');
+    });
+
+    it('should return 200 and success with valid callback query parameters', async () => {
+      const response = await request(server)
+        .get('/api/spotify/callback')
+        .query({ code: 'valid-code', state: 'valid-state' });
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        ok: true,
+        received: { code: 'valid-code', state: 'valid-state' },
+      });
+    });
+  });
 });
