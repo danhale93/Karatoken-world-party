@@ -1,0 +1,17 @@
+
+> karatoken-mcp@1.0.0 start /app/karatoken-integrated
+> node integrated-server.js
+
+Starting integrated Karatoken server...
+
+=== Karatoken Integrated Server Running ===
+Local: http://localhost:3100
+Health Check: http://localhost:3100/health
+Web Interface: http://localhost:3100/index.html
+Features: Genre Swap, Stylus Transfer, YouTube Integration
+WebSocket: Enabled for real-time updates
+==========================================
+
+Health check called
+Terminated
+ ELIFECYCLE  Command failed with exit code 143.

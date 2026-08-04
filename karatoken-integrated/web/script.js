@@ -29,7 +29,7 @@
   // Add keyboard shortcuts
   document.addEventListener('keydown', (e) => {
     // Ctrl+Enter to trigger genre swap
-    if (e.ctrlKey && e.key === 'Enter' && genreSwapBtn) {
+    if (e.ctrlKey && e.key === 'Enter' && genreSwapBtn && !genreSwapBtn.disabled) {
       e.preventDefault();
       swapGenre();
     }
@@ -80,12 +80,18 @@
       if (copyText) {
         copyText.textContent = 'Copied!';
       }
-      copyLrcBtn.classList.add('success');
+      copyLrcBtn.setAttribute('aria-label', 'Lyrics copied successfully');
+      copyLrcBtn.style.setProperty('background', 'var(--success)', 'important');
+      copyLrcBtn.style.setProperty('color', 'white', 'important');
+      copyLrcBtn.style.setProperty('border-color', 'var(--success)', 'important');
       setTimeout(() => {
         if (copyText) {
           copyText.textContent = 'Copy LRC';
         }
-        copyLrcBtn.classList.remove('success');
+        copyLrcBtn.setAttribute('aria-label', 'Copy LRC lyrics to clipboard');
+        copyLrcBtn.style.removeProperty('background');
+        copyLrcBtn.style.removeProperty('color');
+        copyLrcBtn.style.removeProperty('border-color');
       }, 2000);
     } catch (err) {
       console.error('Failed to copy text: ', err);
