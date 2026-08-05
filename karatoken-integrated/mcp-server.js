@@ -11,6 +11,7 @@ const StylusWorker = require('./workers/StylusWorker');
 class MCPServer {
   constructor() {
     this.app = express();
+    this.app.disable('x-powered-by');
     this.workers = {
       current: new GenreSwapWorker(),
       stylus: new StylusWorker()
@@ -21,6 +22,14 @@ class MCPServer {
   }
 
   setupMiddleware() {
+    // Security headers middleware to mitigate basic web vulnerabilities
+    this.app.use((req, res, next) => {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Frame-Options', 'DENY');
+      res.setHeader('X-XSS-Protection', '1; mode=block');
+      res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+      next();
+    });
     this.app.use(cors());
     this.app.use(express.json());
     this.app.use(express.static('public'));
@@ -62,8 +71,33 @@ class MCPServer {
       try {
         const { type, data } = req.body;
         
-        if (!this.workers[type]) {
+        // Strict allowlist validation to prevent type/prototype pollution/confusion on workers lookup
+        if (typeof type !== 'string' || !['current', 'stylus'].includes(type)) {
           return res.status(400).json({ error: 'Invalid server type' });
+        }
+
+        // Ensure data payload exists and is an object
+        if (!data || typeof data !== 'object') {
+          return res.status(400).json({ error: 'Invalid or missing data payload' });
+        }
+
+        // Validate nested parameters based on type to avoid path traversal / injection
+        if (type === 'current') {
+          const { audioUrl, genre } = data;
+          if (typeof audioUrl !== 'string' || typeof genre !== 'string') {
+            return res.status(400).json({ error: 'Missing or invalid parameters' });
+          }
+          if (!/^[a-zA-Z0-9\s_-]+$/.test(genre)) {
+            return res.status(400).json({ error: 'Invalid genre format' });
+          }
+        } else if (type === 'stylus') {
+          const { contentUrl, styleGenre } = data;
+          if (typeof contentUrl !== 'string' || typeof styleGenre !== 'string') {
+            return res.status(400).json({ error: 'Missing or invalid parameters' });
+          }
+          if (!/^[a-zA-Z0-9\s_-]+$/.test(styleGenre)) {
+            return res.status(400).json({ error: 'Invalid style genre format' });
+          }
         }
 
         // Forward request to appropriate worker
@@ -71,7 +105,8 @@ class MCPServer {
         res.json(response);
       } catch (error) {
         console.error('Process error:', error);
-        res.status(500).json({ error: 'Processing failed', details: error.message });
+        // Secure error message to avoid internal info disclosure
+        res.status(500).json({ error: 'Processing failed' });
       }
     });
     
@@ -80,8 +115,13 @@ class MCPServer {
       try {
         const { type, jobId } = req.params;
         
-        if (!this.workers[type]) {
+        // Strict key verification to prevent prototype pollution or arbitrary object lookup
+        if (!['current', 'stylus'].includes(type)) {
           return res.status(400).json({ error: 'Invalid server type' });
+        }
+
+        if (typeof jobId !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(jobId)) {
+          return res.status(400).json({ error: 'Invalid jobId format' });
         }
         
         const status = await this.getJobStatus(type, jobId);
@@ -98,7 +138,8 @@ class MCPServer {
         res.json({ ok: true, job });
       } catch (error) {
         console.error('Status check error:', error);
-        res.status(500).json({ error: 'Status check failed', details: error.message });
+        // Secure error message to avoid internal info disclosure
+        res.status(500).json({ error: 'Status check failed' });
       }
     });
     
@@ -106,12 +147,23 @@ class MCPServer {
     this.app.post('/api/genre/swap', async (req, res) => {
       try {
         const { audioUrl, targetGenre } = req.body || {};
-        const response = await this.forwardRequest('current', { audioUrl, targetGenre });
+
+        // Strict parameter verification to prevent Parameter Pollution or type confusion
+        if (typeof audioUrl !== 'string' || typeof targetGenre !== 'string') {
+          return res.status(400).json({ ok: false, error: 'Invalid or missing parameters' });
+        }
+
+        if (!/^[a-zA-Z0-9\s_-]+$/.test(targetGenre)) {
+          return res.status(400).json({ ok: false, error: 'Invalid targetGenre' });
+        }
+
+        const response = await this.forwardRequest('current', { audioUrl, genre: targetGenre, targetGenre });
         const statusUrl = `/status/current/${response.jobId}`;
         res.json({ ok: true, statusUrl });
       } catch (error) {
         console.error('Genre swap error:', error);
-        res.status(500).json({ ok: false, error: error.message });
+        // Secure error message to avoid internal info disclosure
+        res.status(500).json({ ok: false, error: 'Genre swap failed' });
       }
     });
 

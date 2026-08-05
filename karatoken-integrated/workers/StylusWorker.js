@@ -30,12 +30,18 @@ class StylusWorker extends BaseWorker {
     // Simulate style transfer processing
     console.log(`Processing style transfer for ${contentPath} with ${styleGenre} style...`);
     
+    // Defense in depth validation for styleGenre
+    if (typeof styleGenre !== 'string' || !/^[a-zA-Z0-9\s_-]+$/.test(styleGenre)) {
+      throw new Error('Invalid styleGenre format');
+    }
+
     // In a real implementation, this would call the actual Stylus transfer logic
     await new Promise(resolve => setTimeout(resolve, 3000));
     
     // Return mock output paths
     const outputDir = path.dirname(contentPath);
-    const outputPath = path.join(outputDir, `stylus_${styleGenre}_${Date.now()}.mp3`);
+    const safeStyleGenre = styleGenre.replace(/[^a-zA-Z0-9\s_-]/g, '_');
+    const outputPath = path.join(outputDir, `stylus_${safeStyleGenre}_${Date.now()}.mp3`);
     const lrcPath = outputPath.replace('.mp3', '.lrc');
     
     // Create empty files for demonstration
