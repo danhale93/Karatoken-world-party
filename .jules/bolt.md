@@ -33,3 +33,7 @@
 ## 2026-07-31 - Avoid RegExp and Array/Object Allocations in Hot String Iteration/Parsing Loops
 **Learning:** Parsing text formats (like SRT to LRC) line-by-line using heavy RegExp, `.split()`, `.map(Number)`, and generic padding operations inside loops creates significant garbage collection pressure and CPU overhead. Using custom index scanning (`indexOf`, `substring`) and conditional native string slicing on a state-machine loop improves parsing throughput and corrects sub-second timestamp loss.
 **Action:** Use simple, low-overhead string searching/slicing functions instead of regexes or multi-pass string splits inside high-frequency iteration loops.
+
+## 2026-08-01 - Avoid Multiple Transcendental Math Calls in Hot DSP Loops
+**Learning:** Checking compression triggering using decibels and scaling parameters inside high-frequency audio sample loops often results in multiple transcendental operations (`Math.log10` and `Math.pow(10, ...)`) on triggering samples. Precalculating the ratio factor outside the loop and simplifying the exponential gain formula to `Math.pow(thresholdEnv / envelope, factor)` reduces this to exactly one `Math.pow` call per triggering sample.
+**Action:** Simplify mathematical equations in audio loops to combine exponents and eliminate costly `Math.log10` transcendental operations.

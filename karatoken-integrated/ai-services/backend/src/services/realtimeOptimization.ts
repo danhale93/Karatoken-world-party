@@ -312,6 +312,8 @@ export class AudioProcessor {
     // By checking if envelope > thresholdEnv, we can completely bypass heavy transcendental
     // calculations (Math.log10 and Math.pow) for all non-triggering samples.
     const thresholdEnv = Math.pow(10, threshold / 20);
+    // ⚡ Bolt Optimization: Precompute the ratio reduction factor outside the loop
+    const factor = 1 - 1 / ratio;
 
     for (let i = 0; i < audioData.length; i += 1) {
       const envIn = Math.abs(audioData[i]);
@@ -322,11 +324,11 @@ export class AudioProcessor {
         envelope = releaseCoef * envelope + (1 - releaseCoef) * envIn;
       }
 
-      // ⚡ Bolt Optimization: Avoid expensive log10 and pow calculations unless the envelope is above thresholdEnv
+      // ⚡ Bolt Optimization: Avoid expensive Math.log10 and Math.pow(10, ...) calculations.
+      // By mathematically simplifying the gain formula to Math.pow(thresholdEnv / envelope, factor),
+      // we reduce two transcendental function calls per triggering sample to exactly one Math.pow call.
       if (envelope > thresholdEnv) {
-        const envDb = 20 * Math.log10(envelope);
-        const gainDb = (threshold - envDb) * (1 - 1 / ratio);
-        result[i] = audioData[i] * Math.pow(10, gainDb / 20);
+        result[i] = audioData[i] * Math.pow(thresholdEnv / envelope, factor);
       } else {
         result[i] = audioData[i];
       }
