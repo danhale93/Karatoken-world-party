@@ -1,5 +1,8 @@
 import { File as BufferFile } from 'node:buffer';
 
+// Save original working directory before any tests or imports run
+const ORIGINAL_CWD = process.cwd();
+
 // Setup test environment variables
 process.env.NODE_ENV = 'test';
 process.env.PORT = '0'; // Use random port for tests
@@ -15,6 +18,18 @@ if (typeof globalThis.File === 'undefined') {
 // For example, you can mock console methods to keep test output clean
 const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
+
+beforeEach(() => {
+  // Restore original working directory if altered by third-party packages (like whisper-node)
+  if (process.cwd() !== ORIGINAL_CWD) {
+    try {
+      process.chdir(ORIGINAL_CWD);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to restore working directory:', err);
+    }
+  }
+});
 
 beforeAll(() => {
   // Suppress expected error/warning messages during tests
