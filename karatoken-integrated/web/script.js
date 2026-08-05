@@ -679,6 +679,22 @@
     const hasAudio = genreAudioUrlInput.value.trim() !== '';
     const hasGenre = genreTargetInput.value.trim() !== '';
     genreSwapBtn.disabled = !(hasAudio && hasGenre);
+
+    if (genreSwapBtn.disabled) {
+      if (!hasAudio && !hasGenre) {
+        genreSwapBtn.setAttribute('title', 'Please provide an Audio URL and Target Genre to process the swap');
+        genreSwapBtn.setAttribute('aria-label', 'Please provide an Audio URL and Target Genre to process the swap');
+      } else if (!hasAudio) {
+        genreSwapBtn.setAttribute('title', 'Please provide a valid Audio URL');
+        genreSwapBtn.setAttribute('aria-label', 'Please provide a valid Audio URL');
+      } else {
+        genreSwapBtn.setAttribute('title', 'Please enter a target genre');
+        genreSwapBtn.setAttribute('aria-label', 'Please enter a target genre');
+      }
+    } else {
+      genreSwapBtn.setAttribute('title', 'Swap Genre (Ctrl + Enter)');
+      genreSwapBtn.setAttribute('aria-label', 'Swap Genre (Ctrl + Enter)');
+    }
   }
   
   genreAudioUrlInput?.addEventListener('input', updateSwapButtonState);

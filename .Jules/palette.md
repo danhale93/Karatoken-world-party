@@ -19,3 +19,7 @@
 ## 2026-07-31 - Safe State Transitions & Keyboard Shortcut Safety in Developer Previews
 **Learning:** Reusing alert/feedback classes like `.success` on small inline controls (like Copy buttons) can introduce heavy layout jank due to clashing box model definitions (e.g., margins/padding/display rules). Additionally, keyboard shortcuts (such as Ctrl+Enter) that trigger core operations must respect the button/form's validation-driven disabled states, preventing accidental empty submissions or premature UI state overrides.
 **Action:** For lightweight feedback transitions, apply targeted inline styling properties or separate scoped helper classes instead of global block-level alert style definitions, and explicitly assert button/input availability in all global shortcut listeners.
+
+## 2026-08-05 - Descriptive Accessible Form Validation on Disabled Controls
+**Learning:** Leaving submit buttons disabled without explaining why is highly frustrating and inaccessible, particularly for screen reader users who cannot visually determine what inputs are missing or invalid. Dynamically updating the `title` and `aria-label` attributes on a disabled submit button to describe missing validation fields, and shifting to shortcut indicators when active, provides a delightful and highly accessible form feedback loop.
+**Action:** When a button is disabled due to multi-input validation constraints, dynamically set state-specific `title` and `aria-label` attributes detailing exactly which inputs are missing, and update them to present key shortcut hints when active.
