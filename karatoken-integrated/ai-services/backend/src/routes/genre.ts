@@ -43,7 +43,8 @@ interface Job {
 // const LYRICS_MODE = process.env.LYRICS_MODE || 'auto'; // local|cloud|auto
 // const USE_OLLAMA = process.env.USE_OLLAMA === 'true';
 // const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
-const CACHE_DIR = process.env.CACHE_DIR || path.join(process.cwd(), '.cache');
+const INITIAL_CWD = process.cwd();
+const CACHE_DIR = process.env.CACHE_DIR || path.join(INITIAL_CWD, '.cache');
 const ENABLE_CACHE = process.env.ENABLE_CACHE !== 'false';
 
 // Ensure cache directory exists
@@ -127,9 +128,9 @@ async function runGenreSwap(job: Job) {
     let localAudioPath: string;
 
     if (isLocalFile) {
-      localAudioPath = path.resolve(process.cwd(), audioUrl);
+      localAudioPath = path.resolve(INITIAL_CWD, audioUrl);
       // Ensure the resolved path remains within the project directory to prevent path traversal
-      const relative = path.relative(process.cwd(), localAudioPath);
+      const relative = path.relative(INITIAL_CWD, localAudioPath);
       if (relative.startsWith('..') || path.isAbsolute(relative)) {
         throw new Error('Access denied: Invalid file path');
       }
@@ -151,7 +152,7 @@ async function runGenreSwap(job: Job) {
       }
     } else {
       // Simulate download
-      localAudioPath = path.join(process.cwd(), 'tmp', `download_${job.id}.mp3`);
+      localAudioPath = path.join(INITIAL_CWD, 'tmp', `download_${job.id}.mp3`);
     }
 
     job.progress = 25;
