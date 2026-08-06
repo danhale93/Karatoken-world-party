@@ -4,7 +4,21 @@ import fs from 'fs';
 import path from 'path';
 import ytsr from 'ytsr';
 
+import { createRateLimiter } from '../services/rateLimiter';
+
 const router = express.Router();
+
+const searchLimiter = createRateLimiter({
+  windowMs: process.env.NODE_ENV === 'test' ? 1000 : 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 10 : 60,
+  message: 'Too many search requests, please try again later',
+});
+
+const downloadLimiter = createRateLimiter({
+  windowMs: process.env.NODE_ENV === 'test' ? 1000 : 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 10 : 15,
+  message: 'Too many download requests, please try again later',
+});
 
 const DEFAULT_HEADERS = {
   'user-agent':
@@ -12,7 +26,7 @@ const DEFAULT_HEADERS = {
   'accept-language': 'en-US,en;q=0.9',
 };
 
-router.get('/search', async (req: Request, res: Response) => {
+router.get('/search', searchLimiter, async (req: Request, res: Response) => {
   const q = req.query.q;
   if (!q || typeof q !== 'string') {
     return res.status(400).json({ ok: false, error: 'Missing or invalid q parameter' });
@@ -37,7 +51,7 @@ router.get('/search', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/download', async (req: Request, res: Response) => {
+router.post('/download', downloadLimiter, async (req: Request, res: Response) => {
   try {
     const url = req.body && req.body.url;
 

@@ -1,0 +1,54 @@
+## YYYY-MM-DD - [Title]
+**Vulnerability:** [What you found]
+**Learning:** [Why it existed]
+**Prevention:** [How to avoid next time]
+
+## 2026-08-05 - Parameter Pollution, Prototype Confusion, and Path Traversal in MCP Server
+**Vulnerability:** In `karatoken-integrated/mcp-server.js`, external endpoints (`POST /process`, `GET /status/:type/:jobId`, and `POST /api/genre/swap`) accepted raw, unchecked parameters (`type`, `jobId`, `audioUrl`, `targetGenre`) directly, allowing parameter pollution and type confusion. Under certain inputs, looking up `this.workers[type]` without key constraints could result in prototype pollution or execution/retrieval of arbitrary constructor/object methods. Additionally, `styleGenre` was directly interpolated into output file paths in `StylusWorker.js` without sanitization, posing a path traversal vulnerability.
+**Learning:** Relying on standard Express middleware parsing without explicit key allowlist validation or parameter type checks exposes the application to prototype lookup issues, type confusion, and file system traversal.
+**Prevention:** Always restrict object lookups from untrusted inputs to strict allowlist arrays (such as `['current', 'stylus'].includes(type)`). Perform explicit string type-checks (`typeof param === 'string'`) and validate parameters using alphanumeric-only regular expressions (`/^[a-zA-Z0-9\s_-]+$/`) before passing them to internal workers or path-joining operations.
+
+## 2026-08-04 - Express Parameter Pollution and Type Confusion Gaps in Routing Endpoints
+**Vulnerability:** In `ai-services/backend/src/routes/youtube.ts` `/search`, query parameter `q` was cast to string via `.toString()`, which could lead to array-to-string conversion ("item1,item2") and unexpected type confusion / Parameter Pollution. Also, in the `/api/spotify/callback` and gateway endpoints `/api/genre/swap` and `/api/stylus/transfer`, parameters were not strictly checked to be string types, enabling similar parameter pollution vectors.
+**Learning:** Relying on conversion methods like `.toString()` or simple existence checks (`if (!param)`) is insufficient because Express parses duplicate queries/bodies as arrays, causing type/logic confusion downstream.
+**Prevention:** Always strictly assert request query/body parameter types using explicit `typeof param === 'string'` validation checks before processing.
+
+## 2026-08-03 - YouTube Downloader SSRF & Parameter Type Confusion Vulnerability
+**Vulnerability:** In the backend `ai-services/backend/src/routes/youtube.ts`, the `/download` endpoint directly parsed the `req.body.url` body parameter using relaxed type checking and relied solely on `ytdl.validateURL(url)` to validate the requested URL. This bypassed intended YouTube domain boundaries and opened up Server-Side Request Forgery (SSRF) vectors if malicious domain URLs (e.g. resolving to localhost or internal network IPs via DNS routing or custom hostnames) were requested.
+**Learning:** Third-party utility validation functions like `ytdl.validateURL` are often overly permissive and must never be trusted as the sole SSRF defense. Additionally, neglecting strict type check assertions on request payload variables can expose internal processing functions to type confusion or Express Parameter Pollution.
+**Prevention:** Constrain URL inputs strictly to a regex allowlist (such as restricting requests exclusively to known YouTube domain names) before passing them to secondary libraries, and always assert `typeof req.body.url === 'string'`.
+
+## 2026-08-01 - Parameter Pollution & DoS Vulnerability on Public Gateway Endpoints
+**Vulnerability:** In `integrated-server.js`, raw query and body parameters (such as `req.query.q` and `req.body.url`) were processed directly without type verification, exposing the backend to Express parameter pollution (e.g. array-based queries causing application crashes or logic bypasses) and Server-Side Request Forgery (SSRF) when requesting downloads. Furthermore, key computationally expensive or third-party mock endpoints (like YouTube downloading and search) lacked rate limiting, rendering them prone to resource exhaustion/Denial of Service (DoS) attacks.
+**Learning:** External-facing servers must never trust input types or assume clients will only send standard scalars. Additionally, standard Express setups lack built-in protection against rapid automated abuse; implementing dependency-free rate limiters and security headers is critical for robust gateway defense.
+**Prevention:** Always assert `typeof parameter === 'string'` on incoming user inputs in Express route handlers to prevent type/parameter pollution. Use strict validation regex for URLs and deploy a lightweight, in-memory rate limiter to bound API consumption without adding bulky npm dependencies.
+
+## 2026-07-29 - DOM-based XSS via Unsanitized Metadata in Video Card Renderer
+**Vulnerability:** In `web/script.js`, dynamic YouTube video metadata (`video.thumbnail`, `video.title`, `video.channel`) returned by search APIs was directly interpolated into the `img src` attribute, outer `aria-label` attribute, and dynamic `innerHTML` blocks inside `createVideoElement` without escaping. This allowed a malicious API payload to break out of attributes and execute arbitrary JS, leading to DOM-based Cross-Site Scripting.
+**Learning:** Simply escaping some elements' text content is insufficient if other parameters like URLs, attributes, or image sources remain unescaped inside raw HTML strings dynamically parsed by `innerHTML`.
+**Prevention:** Always use a comprehensive, robust `escapeHTML` function to escape all dynamic values (including URLs, attributes, and secondary descriptors) before inserting them into template literals processed by `innerHTML`.
+
+## 2026-07-25 - Arbitrary File Write via Local Path Traversal & Parameter Injection
+**Vulnerability:** In `ai-services/backend/src/routes/genre.ts`, the background worker supported local `audioUrl` paths but did not validate that they were strictly bounded. This allowed malicious requests to supply path traversal paths (e.g. `../../tsconfig.json`) to trigger arbitrary local file write operations when processing outputs. Additionally, `targetGenre` was not restricted to safe character sets, presenting input injection risks.
+**Learning:** Even internal backend routes or simulated pipelines must robustly validate that local path arguments resolve to authorized directories. Additionally, parameters that map directly to file paths or shell utilities (like targetGenre/styleGenre) must be parsed through strict regex constraint allowlists.
+**Prevention:** Always validate local file path inputs by resolving them to absolute paths and checking their relative offset with `path.relative` to ensure they reside strictly within base directory boundaries. Restrict user-controlled string parameters used in system paths to alphanumeric allowlists.
+
+## 2026-07-23 - Arbitrary File Download via Path Traversal
+**Vulnerability:** A path traversal vulnerability existed in the `/dl/:filename` route in `integrated-server.js` due to direct concatenation of unsanitized user-controlled route parameters using `path.join()`. This allowed users to navigate out of the intended temporary directory and download arbitrary files. Additionally, a subtle path traversal prefix-bypass vulnerability existed in the `safeJoin` helper functions in `ai-services/backend` because `startsWith` matched directories with the same prefix (e.g. `tmp-other` next to `tmp`).
+**Learning:** Concatenating raw route parameters with directory paths can lead to directory traversal even when base paths are specified. Simple prefix matching with `.startsWith(base)` is also insufficient if the base path is not directory-aligned (such as by checking for a trailing slash, or using `path.relative` to ensure proper hierarchy checks).
+**Prevention:** Always sanitize filenames from route parameters using `path.basename()` when nested directory structures are not expected. For nested directory joins, use robust validation functions that utilize `path.relative` to check that the resolved path is strictly within the boundaries of the allowed parent directory.
+
+## 2026-07-24 - Arbitrary Local File Access via Path Traversal in Genre Swap
+**Vulnerability:** A path traversal vulnerability existed in the `/api/genre/swap` route because the backend resolved the user-controlled local `audioUrl` using `path.resolve(process.cwd(), audioUrl)` without sanitization or boundary checking. This allowed background workers to read, copy, or write dummy files adjacent to arbitrary system files like `/etc/passwd`.
+**Learning:** Local file inputs processed by background workers can be subject to path traversal if the system directly resolves paths against the process working directory without boundary checks.
+**Prevention:** Always use `path.relative()` on resolved local paths to verify that they are strictly located within the expected base directory (e.g., `process.cwd()`), throwing an error or rejecting the request if the relative path starts with `..` or is absolute.
+
+## 2026-07-28 - Path Traversal & Directory Download via /dl Endpoint
+**Vulnerability:** A path traversal vulnerability existed in `/dl` file download routes due to relying solely on `path.basename()` for filename sanitization, which fails to strip `.` and `..` (i.e. `path.basename('..') === '..'`). Furthermore, lack of file-type validation allowed users to download directory structures or crash the server by requesting base folders.
+**Learning:** `path.basename()` is insufficient for sanitizing user-input paths if they consist entirely of dot-segments. Also, serving arbitrary resolved paths without checking if they are files allows directory reading/resource consumption.
+**Prevention:** Always validate that the resolved path does not point to the base directory itself (`relative === '.' || relative === ''`) and that the resolved path is a regular file (`fs.statSync().isFile()`).
+
+## 2026-08-06 - Memory Leak and IP Spoofing in Custom Rate Limiter
+**Vulnerability:** A newly implemented in-memory rate limiter tracked incoming IP addresses inside a perpetual Map without expiration, allowing resource exhaustion (CWE-400) under large IP rotation or spoofing scenarios. It also parsed raw `x-forwarded-for` headers, leaving it bypassable.
+**Learning:** Naive in-memory maps keep stale entries alive indefinitely. Always incorporate background sweeps to prune inactive keys, and rely on Express's natively managed `req.ip` rather than raw untrusted header parsing.
+**Prevention:** Implement sliding-window pruning using `setInterval` and `unref()` to remove stale entries dynamically, and strictly utilize `req.ip` under Express proxy rules.
