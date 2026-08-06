@@ -1,0 +1,34 @@
+{
+  "ok": true,
+  "jobId": "job_1785986643881_v6lmm1",
+  "job": {
+    "id": "job_1785986643881_v6lmm1",
+    "status": "completed",
+    "progress": 100,
+    "params": {
+      "audioUrl": "/app/karatoken-integrated/ai-services/backend/test/test-audio.mp3",
+      "targetGenre": "pop",
+      "karaokeMode": true
+    },
+    "result": {
+      "outputUrl": "/dl/test-audio_final_pop.mp3",
+      "lrcUrl": "/dl/test-audio.lrc",
+      "vocalUrl": "/dl/test-audio_vocal.mp3",
+      "instrumentalUrl": "/dl/test-audio_instr.mp3",
+      "newBackingUrl": "/dl/test-audio_backing_pop.mp3"
+    },
+    "error": null,
+    "log": [
+      "Job created for /app/karatoken-integrated/ai-services/backend/test/test-audio.mp3",
+      "Downloading source audio...",
+      "Source audio ready at: /app/karatoken-integrated/ai-services/backend/test/test-audio.mp3",
+      "Separating vocals and accompaniment...",
+      "Generating new pop backing track...",
+      "Transcribing lyrics...",
+      "Remixing final track...",
+      "Job completed successfully!"
+    ],
+    "createdAt": "2026-08-06T03:24:03.881Z",
+    "updatedAt": "2026-08-06T03:24:03.881Z"
+  }
+}

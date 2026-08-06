@@ -37,3 +37,7 @@
 ## 2026-08-01 - Avoid Multiple Transcendental Math Calls in Hot DSP Loops
 **Learning:** Checking compression triggering using decibels and scaling parameters inside high-frequency audio sample loops often results in multiple transcendental operations (`Math.log10` and `Math.pow(10, ...)`) on triggering samples. Precalculating the ratio factor outside the loop and simplifying the exponential gain formula to `Math.pow(thresholdEnv / envelope, factor)` reduces this to exactly one `Math.pow` call per triggering sample.
 **Action:** Simplify mathematical equations in audio loops to combine exponents and eliminate costly `Math.log10` transcendental operations.
+
+## 2026-08-02 - Background Job Result Caching with In-Memory Mapping for Rapid API Endpoint Responses
+**Learning:** Caching results of heavy asynchronous/background simulations (like AI genre swapping taking ~8 seconds) to disk allows subsequent requests to resolve instantly. However, since clients pull status via an independent polling endpoint, the cached job must also be registered back into the in-memory active jobs store on a cache hit to prevent subsequent polling calls from failing with a "Job not found" 404 error.
+**Action:** When returning cached background job results from cache middleware, ensure the cached job object is registered in the in-memory jobs collection/map so that the polling/status endpoints can immediately locate and return the completed job status.
