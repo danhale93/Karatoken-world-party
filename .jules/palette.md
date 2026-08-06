@@ -23,3 +23,7 @@
 ## 2026-08-05 - Descriptive Accessible Form Validation on Disabled Controls
 **Learning:** Leaving submit buttons disabled without explaining why is highly frustrating and inaccessible, particularly for screen reader users who cannot visually determine what inputs are missing or invalid. Dynamically updating the `title` and `aria-label` attributes on a disabled submit button to describe missing validation fields, and shifting to shortcut indicators when active, provides a delightful and highly accessible form feedback loop.
 **Action:** When a button is disabled due to multi-input validation constraints, dynamically set state-specific `title` and `aria-label` attributes detailing exactly which inputs are missing, and update them to present key shortcut hints when active.
+
+## 2026-08-08 - Programmatic Value Modifications and Dynamic State Synchronization
+**Learning:** Programmatically updating form inputs (like auto-filling URLs from search results or API responses) does not trigger standard 'input' or 'change' events. This can cause severe UX and state-based accessibility desyncs, leaving submit buttons falsely disabled. Whenever an input is updated programmatically, the corresponding button validation and state-updater functions must be invoked manually to synchronize the button's visual/ARIA states.
+**Action:** Always manually trigger state synchronization functions immediately after programmatically setting the value of any form controls that contribute to conditional button logic.
