@@ -245,6 +245,7 @@
       // Auto-select this video in the list
       document.querySelectorAll('.video-result').forEach(el => el.classList.remove('selected'));
       div.classList.add('selected');
+      updateYtDownloadButtonState();
     };
     div.addEventListener('click', selectVideo);
     div.addEventListener('keydown', (e) => {
@@ -309,6 +310,7 @@
         ytUrlInput.value = data.items[0].url;
         resultsDiv.firstChild.classList.add('selected');
       }
+      updateYtDownloadButtonState();
 
     } catch (error) {
       console.error('YouTube search error:', error);
@@ -379,6 +381,8 @@
         // Fallback to local path (less ideal for web usage)
         genreAudioUrlInput.value = data.file;
       }
+
+      updateSwapButtonState();
 
       ytDlOut.innerHTML = `
         <div class="success">
@@ -700,4 +704,43 @@
   genreAudioUrlInput?.addEventListener('input', updateSwapButtonState);
   genreTargetInput?.addEventListener('input', updateSwapButtonState);
   updateSwapButtonState();
+
+  function updateYtSearchButtonState() {
+    if (!ytSearchBtn || !ytQueryInput) return;
+    const hasQuery = ytQueryInput.value.trim() !== '';
+    ytSearchBtn.disabled = !hasQuery;
+
+    if (ytSearchBtn.disabled) {
+      ytSearchBtn.setAttribute('title', 'Please enter a search term');
+      ytSearchBtn.setAttribute('aria-label', 'Please enter a search term');
+    } else {
+      ytSearchBtn.setAttribute('title', 'Search YouTube (Enter)');
+      ytSearchBtn.setAttribute('aria-label', 'Search YouTube (Enter)');
+    }
+  }
+
+  function updateYtDownloadButtonState() {
+    if (!ytDlBtn || !ytUrlInput) return;
+    const url = ytUrlInput.value.trim();
+    const hasUrl = url !== '';
+    const isValidYt = !!url.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/);
+
+    ytDlBtn.disabled = !isValidYt;
+
+    if (!hasUrl) {
+      ytDlBtn.setAttribute('title', 'Please enter or select a YouTube URL');
+      ytDlBtn.setAttribute('aria-label', 'Please enter or select a YouTube URL');
+    } else if (!isValidYt) {
+      ytDlBtn.setAttribute('title', 'Please enter a valid YouTube URL');
+      ytDlBtn.setAttribute('aria-label', 'Please enter a valid YouTube URL');
+    } else {
+      ytDlBtn.setAttribute('title', 'Download YouTube Audio (Enter)');
+      ytDlBtn.setAttribute('aria-label', 'Download YouTube Audio (Enter)');
+    }
+  }
+
+  ytQueryInput?.addEventListener('input', updateYtSearchButtonState);
+  ytUrlInput?.addEventListener('input', updateYtDownloadButtonState);
+  updateYtSearchButtonState();
+  updateYtDownloadButtonState();
 })();
