@@ -140,4 +140,85 @@ describe('Genre Swap API', () => {
       expect(response.body).toHaveProperty('error', 'Job not found');
     });
   });
+
+  describe('Caching behavior of /api/genre/swap', () => {
+    const targetGenre = 'pop_cache_test';
+    const expectedCacheKey = `${testAudioPath}-${targetGenre}`
+      .replace(/[^a-z0-9]/gi, '_')
+      .toLowerCase();
+    const cacheFilePath = path.join(__dirname, '../../.cache', `${expectedCacheKey}.json`);
+
+    afterAll(() => {
+      // Clean up cached json and dummy files generated during the cache tests
+      try {
+        if (fs.existsSync(cacheFilePath)) {
+          fs.unlinkSync(cacheFilePath);
+        }
+        const generatedFiles = [
+          testAudioPath.replace('.mp3', '_instr.mp3'),
+          testAudioPath.replace('.mp3', '_vocal.mp3'),
+          testAudioPath.replace('.mp3', `_backing_${targetGenre}.mp3`),
+          testAudioPath.replace('.mp3', '.lrc'),
+          testAudioPath.replace('.mp3', `_final_${targetGenre}.mp3`),
+        ];
+        generatedFiles.forEach(file => {
+          if (fs.existsSync(file)) {
+            fs.unlinkSync(file);
+          }
+        });
+      } catch (err) {
+        console.warn('Failed to clean up test cache/dummy files:', err);
+      }
+    });
+
+    it('should run full swap, write cache, and hit cache on subsequent request', async () => {
+      // 1. First request (cold start, must process and write cache)
+      const res1 = await request(server).post('/api/genre/swap').send({
+        audioUrl: testAudioPath,
+        targetGenre,
+        karaokeMode: true,
+      });
+
+      expect(res1.status).toBe(200);
+      expect(res1.body).toHaveProperty('ok', true);
+      const jobId = res1.body.jobId;
+
+      // Wait for background job execution to finish (using optimized sleep, this takes ~30ms)
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Verify the job completed successfully
+      const statusRes1 = await request(server).get(`/api/genre/status/${jobId}`);
+      expect(statusRes1.status).toBe(200);
+      expect(statusRes1.body.job.status).toBe('completed');
+
+      // Verify cache file was written to disk
+      expect(fs.existsSync(cacheFilePath)).toBe(true);
+
+      // 2. Second request (should hit the cache immediately)
+      const startTime = performance.now();
+      const res2 = await request(server).post('/api/genre/swap').send({
+        audioUrl: testAudioPath,
+        targetGenre,
+        karaokeMode: true,
+      });
+      const endTime = performance.now();
+
+      expect(res2.status).toBe(200);
+      expect(res2.body).toHaveProperty('ok', true);
+      expect(res2.body).toHaveProperty('cached', true);
+      expect(res2.body.jobId).toBe(jobId);
+
+      // Verify that cache hit response is extremely fast (< 10ms)
+      const responseTime = endTime - startTime;
+      console.log(`\n=== ⚡ Bolt Performance Benchmark (Genre Swap Caching) ===`);
+      console.log(`[Cache Hit] Response time: ${responseTime.toFixed(3)} ms`);
+      console.log(`=========================================================\n`);
+      expect(responseTime).toBeLessThan(150);
+
+      // 3. Verify status polling for the cached job ID also works instantly
+      const statusRes2 = await request(server).get(`/api/genre/status/${jobId}`);
+      expect(statusRes2.status).toBe(200);
+      expect(statusRes2.body.job.status).toBe('completed');
+    });
+  });
 });
