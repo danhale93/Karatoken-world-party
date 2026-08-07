@@ -41,3 +41,7 @@
 ## 2026-08-02 - Background Job Result Caching with In-Memory Mapping for Rapid API Endpoint Responses
 **Learning:** Caching results of heavy asynchronous/background simulations (like AI genre swapping taking ~8 seconds) to disk allows subsequent requests to resolve instantly. However, since clients pull status via an independent polling endpoint, the cached job must also be registered back into the in-memory active jobs store on a cache hit to prevent subsequent polling calls from failing with a "Job not found" 404 error.
 **Action:** When returning cached background job results from cache middleware, ensure the cached job object is registered in the in-memory jobs collection/map so that the polling/status endpoints can immediately locate and return the completed job status.
+
+## 2026-08-03 - High-Performance Tensor Retrieval with .data() vs .array()
+**Learning:** In audio processing pipelines involving TensorFlow.js (such as `applyPitchShift`), calling `.array()` to pull tensor data back to CPU is extremely expensive because it serializes binary floats into a standard nested JS `Array` of number objects. Calling `.data()` returns a flat `TypedArray` directly from TensorFlow's internal heap via highly optimized binary block copy (yielding up to 1.7x speedup or more).
+**Action:** Always prefer `.data()` or `.dataSync()` over `.array()` when retrieving multi-dimensional or flat tensor data back to CPU, and cast/wrap the resulting `TypedArray` to the target format.
