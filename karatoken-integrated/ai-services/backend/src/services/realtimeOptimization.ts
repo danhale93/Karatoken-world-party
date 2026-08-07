@@ -213,10 +213,13 @@ export class AudioProcessor {
       Math.floor(audioData.length / rate),
     ]);
 
-    const result = (await resized.reshape([-1]).array()) as number[];
+    // ⚡ Bolt Optimization: Replace slow .array() serialization with direct, high-performance .data() binary buffer transfer.
+    // This completely bypasses standard JS Array allocation and string/number parsing overhead.
+    const resultData = await resized.reshape([-1]).data();
+    const result = resultData instanceof Float32Array ? resultData : new Float32Array(resultData);
     inputTensor.dispose();
     resized.dispose();
-    return new Float32Array(result);
+    return result;
   }
 
   private async applyReverb(
