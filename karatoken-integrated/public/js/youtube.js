@@ -1,12 +1,12 @@
 class YouTubeSearch {
-    constructor(containerId, onVideoSelect) {
-        this.container = document.getElementById(containerId);
-        this.onVideoSelect = onVideoSelect;
-        this.initialize();
-    }
+  constructor(containerId, onVideoSelect) {
+    this.container = document.getElementById(containerId);
+    this.onVideoSelect = onVideoSelect;
+    this.initialize();
+  }
 
-    initialize() {
-        this.container.innerHTML = `
+  initialize() {
+    this.container.innerHTML = `
             <div class="youtube-search">
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" id="youtubeSearchInput" 
@@ -24,163 +24,189 @@ class YouTubeSearch {
             </div>
         `;
 
-        this.searchInput = document.getElementById('youtubeSearchInput');
-        this.resultsContainer = document.getElementById('youtubeResults');
-        this.playerContainer = document.getElementById('youtubePlayer');
-        
-        document.getElementById('youtubeSearchBtn').addEventListener('click', () => this.search());
-        this.searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') this.search();
-        });
+    this.searchInput = this.container.querySelector("#youtubeSearchInput");
+    this.resultsContainer = this.container.querySelector("#youtubeResults");
+    this.playerContainer = this.container.querySelector("#youtubePlayer");
 
-        this.loadYouTubeAPI();
+    const searchBtn = this.container.querySelector("#youtubeSearchBtn");
+    if (searchBtn) {
+      searchBtn.addEventListener("click", () => this.search());
+    }
+    if (this.searchInput) {
+      this.searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") this.search();
+      });
     }
 
-    loadYouTubeAPI() {
-        const tag = document.createElement('script');
-        tag.src = 'https://www.youtube.com/iframe_api';
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    this.loadYouTubeAPI();
+  }
 
-        window.onYouTubeIframeAPIReady = () => {
-            this.player = new YT.Player('player', {
-                height: '360',
-                width: '640',
-                playerVars: {
-                    'playsinline': 1
-                },
-                events: {
-                    'onReady': (event) => this.onPlayerReady(event),
-                    'onStateChange': (event) => this.onPlayerStateChange(event)
-                }
-            });
-        };
+  loadYouTubeAPI() {
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName("script")[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    window.onYouTubeIframeAPIReady = () => {
+      this.player = new YT.Player("player", {
+        height: "360",
+        width: "640",
+        playerVars: {
+          playsinline: 1,
+        },
+        events: {
+          onReady: (event) => this.onPlayerReady(event),
+          onStateChange: (event) => this.onPlayerStateChange(event),
+        },
+      });
+    };
+  }
+
+  onPlayerReady(event) {
+    console.log("YouTube player ready");
+  }
+
+  onPlayerStateChange(event) {
+    // Handle player state changes
+  }
+
+  async search() {
+    if (!this.searchInput) return;
+    const query = this.searchInput.value.trim();
+    if (!query) return;
+
+    const searchBtn = this.container.querySelector("#youtubeSearchBtn");
+    let originalContent = "";
+    if (searchBtn) {
+      originalContent = searchBtn.innerHTML;
+      searchBtn.disabled = true;
+      searchBtn.innerHTML =
+        '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Searching...';
     }
 
-    onPlayerReady(event) {
-        console.log('YouTube player ready');
-    }
+    this.resultsContainer.innerHTML =
+      '<div class="col-12 text-center"><div class="spinner-border" role="status"></div></div>';
 
-    onPlayerStateChange(event) {
-        // Handle player state changes
-    }
+    try {
+      const response = await fetch(
+        `/api/youtube/search?q=${encodeURIComponent(query)}`,
+      );
 
-    async search() {
-        const query = this.searchInput.value.trim();
-        if (!query) return;
+      if (!response.ok) {
+        throw new Error(`Search failed: ${response.status}`);
+      }
 
-        this.resultsContainer.innerHTML = '<div class="col-12 text-center"><div class="spinner-border" role="status"></div></div>';
+      const data = await response.json();
 
-        try {
-            const response = await fetch(`/api/youtube/search?q=${encodeURIComponent(query)}`);
-            
-            if (!response.ok) {
-                throw new Error(`Search failed: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            
-            if (!data.ok) {
-                throw new Error(data.error || 'Search failed');
-            }
+      if (!data.ok) {
+        throw new Error(data.error || "Search failed");
+      }
 
-            this.displayResults(data.items);
-        } catch (error) {
-            console.error('YouTube search failed:', error);
-            this.resultsContainer.innerHTML = `
+      this.displayResults(data.items);
+    } catch (error) {
+      console.error("YouTube search failed:", error);
+      this.resultsContainer.innerHTML = `
                 <div class="col-12">
                     <div class="alert alert-danger">
                         Error searching YouTube: ${error.message}
                     </div>
                 </div>
             `;
-        }
+    } finally {
+      if (searchBtn) {
+        searchBtn.disabled = false;
+        searchBtn.innerHTML = originalContent;
+      }
+    }
+  }
+
+  escapeHTML(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  displayResults(videos) {
+    this.resultsContainer.innerHTML = "";
+
+    if (!videos || videos.length === 0) {
+      this.resultsContainer.innerHTML =
+        '<div class="col-12">No videos found</div>';
+      return;
     }
 
-    escapeHTML(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-    }
-
-    displayResults(videos) {
-        this.resultsContainer.innerHTML = '';
-
-        if (!videos || videos.length === 0) {
-            this.resultsContainer.innerHTML = '<div class="col-12">No videos found</div>';
-            return;
-        }
-
-        videos.forEach(video => {
-            const videoElement = document.createElement('div');
-            videoElement.className = 'col-md-6 col-lg-4';
-            videoElement.innerHTML = `
+    videos.forEach((video) => {
+      const videoElement = document.createElement("div");
+      videoElement.className = "col-md-6 col-lg-4";
+      videoElement.innerHTML = `
                 <div class="card h-100">
                     <img src="${this.escapeHTML(video.thumbnail)}"
                          class="card-img-top"
                          alt="${this.escapeHTML(video.title)}">
                     <div class="card-body">
                         <h6 class="card-title">${this.escapeHTML(video.title)}</h6>
-                        <p class="card-text text-muted small">${this.escapeHTML(video.channel || 'Unknown Channel')}</p>
-                        ${video.duration ? `<small class="text-muted">Duration: ${this.escapeHTML(this.formatDuration(video.duration))}</small>` : ''}
+                        <p class="card-text text-muted small">${this.escapeHTML(video.channel || "Unknown Channel")}</p>
+                        ${video.duration ? `<small class="text-muted">Duration: ${this.escapeHTML(this.formatDuration(video.duration))}</small>` : ""}
                     </div>
                     <div class="card-footer bg-transparent">
                         <button class="btn btn-sm btn-primary select-video"
                                 data-video-id="${this.escapeHTML(video.id)}"
                                 data-title="${this.escapeHTML(video.title)}"
-                                data-url="${this.escapeHTML(video.url)}">
+                                data-url="${this.escapeHTML(video.url)}"
+                                aria-label="Select ${this.escapeHTML(video.title)}">
                             Select
                         </button>
                         <button class="btn btn-sm btn-outline-secondary preview-video"
-                                data-video-id="${this.escapeHTML(video.id)}">
+                                data-video-id="${this.escapeHTML(video.id)}"
+                                aria-label="Preview ${this.escapeHTML(video.title)}">
                             Preview
                         </button>
                     </div>
                 </div>
             `;
-            this.resultsContainer.appendChild(videoElement);
+      this.resultsContainer.appendChild(videoElement);
+    });
+
+    // Add event listeners
+    this.container.querySelectorAll(".select-video").forEach((button) => {
+      button.addEventListener("click", (e) => {
+        const videoId = e.target.dataset.videoId;
+        const title = e.target.dataset.title;
+        const url = e.target.dataset.url;
+        this.onVideoSelect({
+          id: videoId,
+          title: title,
+          url: url,
         });
+      });
+    });
 
-        // Add event listeners
-        this.container.querySelectorAll('.select-video').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const videoId = e.target.dataset.videoId;
-                const title = e.target.dataset.title;
-                const url = e.target.dataset.url;
-                this.onVideoSelect({
-                    id: videoId,
-                    title: title,
-                    url: url
-                });
-            });
-        });
+    this.container.querySelectorAll(".preview-video").forEach((button) => {
+      button.addEventListener("click", (e) => {
+        const videoId = e.target.dataset.videoId;
+        this.previewVideo(videoId);
+      });
+    });
+  }
 
-        this.container.querySelectorAll('.preview-video').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const videoId = e.target.dataset.videoId;
-                this.previewVideo(videoId);
-            });
-        });
-    }
+  // Format duration from seconds to MM:SS
+  formatDuration(seconds) {
+    if (!seconds) return "";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  }
 
-    // Format duration from seconds to MM:SS
-    formatDuration(seconds) {
-        if (!seconds) return '';
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
+  previewVideo(videoId) {
+    this.playerContainer.classList.remove("d-none");
+    this.player.loadVideoById(videoId);
+    this.player.playVideo();
 
-    previewVideo(videoId) {
-        this.playerContainer.classList.remove('d-none');
-        this.player.loadVideoById(videoId);
-        this.player.playVideo();
-        
-        // Scroll to player
-        this.playerContainer.scrollIntoView({ behavior: 'smooth' });
-    }
+    // Scroll to player
+    this.playerContainer.scrollIntoView({ behavior: "smooth" });
+  }
 }
