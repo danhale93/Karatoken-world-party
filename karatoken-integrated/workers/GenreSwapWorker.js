@@ -30,12 +30,18 @@ class GenreSwapWorker extends BaseWorker {
     // Simulate genre swap processing
     console.log(`Processing genre swap for ${audioPath} to ${genre}...`);
     
+    // Defense in depth validation for genre to prevent injection or malicious inputs
+    if (typeof genre !== 'string' || !/^[a-zA-Z0-9\s_-]+$/.test(genre)) {
+      throw new Error('Invalid genre format');
+    }
+
     // In a real implementation, this would call the actual genre swap logic
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     // Return mock output paths
     const outputDir = path.dirname(audioPath);
-    const outputPath = path.join(outputDir, `output_${Date.now()}.mp3`);
+    const safeGenre = genre.replace(/[^a-zA-Z0-9\s_-]/g, '_');
+    const outputPath = path.join(outputDir, `output_${safeGenre}_${Date.now()}.mp3`);
     const lrcPath = outputPath.replace('.mp3', '.lrc');
     
     // Create empty files for demonstration
