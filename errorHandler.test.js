@@ -85,3 +85,48 @@ test('Genre validation rejects directory traversal and malicious inputs', () => 
     assert.strictEqual(isValidGenre(genre), true, `Genre '${genre}' should be accepted as valid`);
   }
 });
+
+// Test GenreSwapWorker validation and sanitization
+const GenreSwapWorker = require('./karatoken-integrated/workers/GenreSwapWorker');
+const fsPromises = require('node:fs/promises');
+
+test('GenreSwapWorker processGenreSwap validates and sanitizes genre', async () => {
+  const worker = new GenreSwapWorker();
+  const testAudioPath = path.join(worker.workDir, 'test_input.mp3');
+
+  // Ensure the work directory exists
+  await fsPromises.mkdir(worker.workDir, { recursive: true });
+
+  // Test with invalid genres
+  const maliciousGenres = [
+    '../../etc/passwd',
+    'genre; rm -rf /',
+    'genre && touch hit',
+    'genre\0',
+    123
+  ];
+
+  for (const invalidGenre of maliciousGenres) {
+    await assert.rejects(
+      async () => {
+        await worker.processGenreSwap(testAudioPath, invalidGenre);
+      },
+      /Invalid genre format/,
+      `Should have rejected invalid genre: ${invalidGenre}`
+    );
+  }
+
+  // Test with a valid genre
+  const validGenre = 'Synthwave 80s';
+  const result = await worker.processGenreSwap(testAudioPath, validGenre);
+
+  assert.strictEqual(result.genre, validGenre);
+  assert.ok(result.audioUrl.includes('Synthwave 80s'));
+
+  // Clean up any files created by the worker
+  const generatedAudio = path.join(path.dirname(testAudioPath), path.basename(result.audioUrl));
+  const generatedLrc = generatedAudio.replace('.mp3', '.lrc');
+
+  await fsPromises.unlink(generatedAudio).catch(() => {});
+  await fsPromises.unlink(generatedLrc).catch(() => {});
+});
