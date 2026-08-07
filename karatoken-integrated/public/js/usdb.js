@@ -1,12 +1,12 @@
 class USDBSearch {
-    constructor(containerId, onSongSelect) {
-        this.container = document.getElementById(containerId);
-        this.onSongSelect = onSongSelect;
-        this.initialize();
-    }
+  constructor(containerId, onSongSelect) {
+    this.container = document.getElementById(containerId);
+    this.onSongSelect = onSongSelect;
+    this.initialize();
+  }
 
-    initialize() {
-        this.container.innerHTML = `
+  initialize() {
+    this.container.innerHTML = `
             <div class="usdb-search">
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" id="usdbSearchInput" 
@@ -58,151 +58,193 @@ class USDBSearch {
             </div>
         `;
 
-        this.searchInput = document.getElementById('usdbSearchInput');
-        this.resultsContainer = document.getElementById('usdbResults');
-        this.previewContainer = document.getElementById('usdbPreview');
-        
-        document.getElementById('usdbSearchBtn').addEventListener('click', () => this.search());
-        document.getElementById('usdbSelectBtn').addEventListener('click', () => this.selectCurrentSong());
-        this.searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') this.search();
-        });
+    this.searchInput = this.container.querySelector("#usdbSearchInput");
+    this.resultsContainer = this.container.querySelector("#usdbResults");
+    this.previewContainer = this.container.querySelector("#usdbPreview");
+
+    const searchBtn = this.container.querySelector("#usdbSearchBtn");
+    if (searchBtn) {
+      searchBtn.addEventListener("click", () => this.search());
+    }
+    const selectBtn = this.container.querySelector("#usdbSelectBtn");
+    if (selectBtn) {
+      selectBtn.addEventListener("click", () => this.selectCurrentSong());
+    }
+    if (this.searchInput) {
+      this.searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") this.search();
+      });
+    }
+  }
+
+  async search() {
+    if (!this.searchInput) return;
+    const query = this.searchInput.value.trim();
+    if (!query) return;
+
+    const searchBtn = this.container.querySelector("#usdbSearchBtn");
+    let originalContent = "";
+    if (searchBtn) {
+      originalContent = searchBtn.innerHTML;
+      searchBtn.disabled = true;
+      searchBtn.innerHTML =
+        '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Searching...';
     }
 
-    async search() {
-        const query = this.searchInput.value.trim();
-        if (!query) return;
+    this.resultsContainer.innerHTML =
+      '<div class="text-center p-3"><div class="spinner-border" role="status"></div></div>';
+    this.previewContainer.classList.add("d-none");
 
-        this.resultsContainer.innerHTML = '<div class="text-center p-3"><div class="spinner-border" role="status"></div></div>';
-        this.previewContainer.classList.add('d-none');
+    try {
+      // In a real implementation, you would call your backend API to search USDB
+      // For now, we'll use a mock response
+      const mockResponse = {
+        songs: [
+          {
+            id: "12345",
+            title: "Example Song",
+            artist: "Example Artist",
+            genre: "Pop",
+            language: "English",
+            year: "2023",
+            preview:
+              "[00:00.00]This is a sample lyric line\n[00:05.00]This is another line\n[00:10.00]...",
+          },
+          {
+            id: "12346",
+            title: "Another Song",
+            artist: "Another Artist",
+            genre: "Rock",
+            language: "English",
+            year: "2022",
+            preview:
+              "[00:00.00]Rock lyrics here\n[00:04.50]With timing information\n[00:08.20]...",
+          },
+        ],
+      };
 
-        try {
-            // In a real implementation, you would call your backend API to search USDB
-            // For now, we'll use a mock response
-            const mockResponse = {
-                songs: [
-                    {
-                        id: '12345',
-                        title: 'Example Song',
-                        artist: 'Example Artist',
-                        genre: 'Pop',
-                        language: 'English',
-                        year: '2023',
-                        preview: "[00:00.00]This is a sample lyric line\n[00:05.00]This is another line\n[00:10.00]..."
-                    },
-                    {
-                        id: '12346',
-                        title: 'Another Song',
-                        artist: 'Another Artist',
-                        genre: 'Rock',
-                        language: 'English',
-                        year: '2022',
-                        preview: "[00:00.00]Rock lyrics here\n[00:04.50]With timing information\n[00:08.20]..."
-                    }
-                ]
-            };
-
-            this.displayResults(mockResponse.songs);
-        } catch (error) {
-            console.error('USDB search failed:', error);
-            this.resultsContainer.innerHTML = `
+      this.displayResults(mockResponse.songs);
+    } catch (error) {
+      console.error("USDB search failed:", error);
+      this.resultsContainer.innerHTML = `
                 <div class="alert alert-danger">
                     Error searching USDB: ${error.message}
                 </div>
             `;
-        }
+    } finally {
+      if (searchBtn) {
+        searchBtn.disabled = false;
+        searchBtn.innerHTML = originalContent;
+      }
     }
+  }
 
-    escapeHTML(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-    }
+  escapeHTML(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
 
-    displayResults(songs) {
-        if (!songs || songs.length === 0) {
-            this.resultsContainer.innerHTML = `
+  displayResults(songs) {
+    if (!songs || songs.length === 0) {
+      this.resultsContainer.innerHTML = `
                 <div class="alert alert-info">
                     No songs found. Try a different search term.
                 </div>
             `;
-            return;
-        }
+      return;
+    }
 
-        let html = '<div class="list-group">';
-        songs.forEach(song => {
-            html += `
+    let html = '<div class="list-group">';
+    songs.forEach((song) => {
+      html += `
                 <a href="#" class="list-group-item list-group-item-action" data-song-id="${this.escapeHTML(song.id)}">
                     <div class="d-flex w-100 justify-content-between">
                         <h6 class="mb-1">${this.escapeHTML(song.title)}</h6>
-                        <small>${this.escapeHTML(song.year || 'N/A')}</small>
+                        <small>${this.escapeHTML(song.year || "N/A")}</small>
                     </div>
                     <p class="mb-1">${this.escapeHTML(song.artist)}</p>
                     <small class="text-muted">
-                        ${this.escapeHTML(song.genre || 'Unknown genre')} • ${this.escapeHTML(song.language || 'Unknown language')}
+                        ${this.escapeHTML(song.genre || "Unknown genre")} • ${this.escapeHTML(song.language || "Unknown language")}
                     </small>
                 </a>
             `;
-        });
-        html += '</div>';
-        
-        this.resultsContainer.innerHTML = html;
+    });
+    html += "</div>";
 
-        // Add click handlers
-        this.container.querySelectorAll('[data-song-id]').forEach(element => {
-            element.addEventListener('click', (e) => {
-                e.preventDefault();
-                const songId = e.currentTarget.dataset.songId;
-                const song = songs.find(s => s.id === songId);
-                if (song) {
-                    this.showSongPreview(song);
-                }
-            });
-        });
-    }
+    this.resultsContainer.innerHTML = html;
 
-    showSongPreview(song) {
-        this.currentSong = song;
-        
-        // Update preview elements
-        document.getElementById('usdbSongTitle').textContent = song.title;
-        document.getElementById('usdbArtist').textContent = song.artist || '-';
-        document.getElementById('usdbGenre').textContent = song.genre || '-';
-        document.getElementById('usdbLanguage').textContent = song.language || '-';
-        document.getElementById('usdbYear').textContent = song.year || '-';
-        
-        // Format and display lyrics preview
-        const lyricsPreview = document.getElementById('usdbLyricsPreview');
-        if (song.preview) {
-            const previewLines = song.preview.split('\n').slice(0, 5).join('\n');
-            lyricsPreview.textContent = previewLines;
-            if (song.preview.split('\n').length > 5) {
-                lyricsPreview.innerHTML += '\n<span class="text-muted">...</span>';
-            }
-        } else {
-            lyricsPreview.textContent = 'No preview available';
+    // Add click handlers
+    this.container.querySelectorAll("[data-song-id]").forEach((element) => {
+      element.addEventListener("click", (e) => {
+        e.preventDefault();
+        const songId = e.currentTarget.dataset.songId;
+        const song = songs.find((s) => s.id === songId);
+        if (song) {
+          this.showSongPreview(song);
         }
-        
-        // Show preview container and scroll to it
-        this.previewContainer.classList.remove('d-none');
-        this.previewContainer.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  }
+
+  showSongPreview(song) {
+    this.currentSong = song;
+
+    // Update preview elements
+    const titleEl = this.container.querySelector("#usdbSongTitle");
+    const artistEl = this.container.querySelector("#usdbArtist");
+    const genreEl = this.container.querySelector("#usdbGenre");
+    const langEl = this.container.querySelector("#usdbLanguage");
+    const yearEl = this.container.querySelector("#usdbYear");
+
+    if (titleEl) titleEl.textContent = song.title;
+    if (artistEl) artistEl.textContent = song.artist || "-";
+    if (genreEl) genreEl.textContent = song.genre || "-";
+    if (langEl) langEl.textContent = song.language || "-";
+    if (yearEl) yearEl.textContent = song.year || "-";
+
+    const selectBtn = this.container.querySelector("#usdbSelectBtn");
+    if (selectBtn) {
+      selectBtn.setAttribute(
+        "aria-label",
+        `Select ${this.escapeHTML(song.title)} by ${this.escapeHTML(song.artist || "Unknown Artist")}`,
+      );
     }
 
-    selectCurrentSong() {
-        if (this.currentSong) {
-            this.onSongSelect({
-                id: this.currentSong.id,
-                title: this.currentSong.title,
-                artist: this.currentSong.artist,
-                genre: this.currentSong.genre,
-                language: this.currentSong.language,
-                year: this.currentSong.year,
-                lyrics: this.currentSong.preview
-            });
+    // Format and display lyrics preview
+    const lyricsPreview = this.container.querySelector("#usdbLyricsPreview");
+    if (lyricsPreview) {
+      if (song.preview) {
+        const previewLines = song.preview.split("\n").slice(0, 5).join("\n");
+        lyricsPreview.textContent = previewLines;
+        if (song.preview.split("\n").length > 5) {
+          lyricsPreview.innerHTML += '\n<span class="text-muted">...</span>';
         }
+      } else {
+        lyricsPreview.textContent = "No preview available";
+      }
     }
+
+    // Show preview container and scroll to it
+    this.previewContainer.classList.remove("d-none");
+    this.previewContainer.scrollIntoView({ behavior: "smooth" });
+  }
+
+  selectCurrentSong() {
+    if (this.currentSong) {
+      this.onSongSelect({
+        id: this.currentSong.id,
+        title: this.currentSong.title,
+        artist: this.currentSong.artist,
+        genre: this.currentSong.genre,
+        language: this.currentSong.language,
+        year: this.currentSong.year,
+        lyrics: this.currentSong.preview,
+      });
+    }
+  }
 }
