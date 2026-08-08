@@ -6,7 +6,8 @@ const PORT = 3000;
 const WEB_DIR = path.join(__dirname, 'web');
 
 const server = http.createServer((req, res) => {
-  let filePath = path.join(WEB_DIR, req.url === '/' ? 'index.html' : req.url);
+  const cleanUrl = req.url.split('?')[0];
+  let filePath = path.join(WEB_DIR, cleanUrl === '/' ? 'index.html' : cleanUrl);
   
   // Default to index.html if the path doesn't have an extension
   if (!path.extname(filePath)) {
