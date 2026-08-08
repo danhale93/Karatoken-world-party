@@ -4,6 +4,8 @@ import fs from 'fs';
 import path from 'path';
 import ytsr from 'ytsr';
 
+import { createRateLimiter } from '../services/rateLimiter';
+
 const router = express.Router();
 
 const DEFAULT_HEADERS = {
@@ -12,7 +14,7 @@ const DEFAULT_HEADERS = {
   'accept-language': 'en-US,en;q=0.9',
 };
 
-router.get('/search', async (req: Request, res: Response) => {
+router.get('/search', createRateLimiter(60000, 60), async (req: Request, res: Response) => {
   const q = req.query.q;
   if (!q || typeof q !== 'string') {
     return res.status(400).json({ ok: false, error: 'Missing or invalid q parameter' });
@@ -37,7 +39,7 @@ router.get('/search', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/download', async (req: Request, res: Response) => {
+router.post('/download', createRateLimiter(60000, 15), async (req: Request, res: Response) => {
   try {
     const url = req.body && req.body.url;
 
