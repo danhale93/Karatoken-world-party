@@ -14,6 +14,25 @@ class MCPClient {
     this.loadJobHistory();
   }
 
+  escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  sanitizeUrl(u) {
+    if (!u) return '';
+    const trimmed = u.trim();
+    if (trimmed.startsWith('/') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    return '';
+  }
+
   // Initialize WebSocket connection for real-time updates
   initializeWebSocket() {
     try {
@@ -301,10 +320,13 @@ class MCPClient {
     toast.setAttribute("aria-atomic", "true");
     toast.id = toastId;
 
+    const safeTitle = this.escapeHTML(title);
+    const safeMessage = this.escapeHTML(message);
+
     toast.innerHTML = `
             <div class="d-flex">
                 <div class="toast-body">
-                    <strong>${title}</strong><br>${message}
+                    <strong>${safeTitle}</strong><br>${safeMessage}
                 </div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
@@ -533,29 +555,32 @@ class MCPClient {
     const resultElement = document.getElementById(`${formId}Result`);
     if (!resultElement) return;
 
+    const safeAudioUrl = this.escapeHTML(this.sanitizeUrl(result.audioUrl));
+    const safeLrcUrl = this.escapeHTML(this.sanitizeUrl(result.lrcUrl));
+
     let html = `
             <div class="result-card success">
                 <h5>Processing Complete!</h5>
                 <p>Your audio has been processed successfully.</p>
         `;
 
-    if (result.audioUrl) {
+    if (result.audioUrl && safeAudioUrl) {
       html += `
                 <div class="mt-2">
                     <audio controls class="audio-player">
-                        <source src="${result.audioUrl}" type="audio/mpeg">
+                        <source src="${safeAudioUrl}" type="audio/mpeg">
                         Your browser does not support the audio element.
                     </audio>
                 </div>
                 <div class="mt-2">
-                    <a href="${result.audioUrl}" class="btn btn-sm btn-outline-primary" download>
+                    <a href="${safeAudioUrl}" class="btn btn-sm btn-outline-primary" download>
                         <i class="bi bi-download"></i> Download Audio
                     </a>
             `;
 
-      if (result.lrcUrl) {
+      if (result.lrcUrl && safeLrcUrl) {
         html += `
-                    <a href="${result.lrcUrl}" class="btn btn-sm btn-outline-secondary ms-2" download>
+                    <a href="${safeLrcUrl}" class="btn btn-sm btn-outline-secondary ms-2" download>
                         <i class="bi bi-file-text"></i> Download LRC
                     </a>
                 `;
@@ -573,7 +598,7 @@ class MCPClient {
     if (resultElement) {
       resultElement.innerHTML = `
                 <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle"></i> ${message}
+                    <i class="bi bi-exclamation-triangle"></i> ${this.escapeHTML(message)}
                 </div>
             `;
     }
