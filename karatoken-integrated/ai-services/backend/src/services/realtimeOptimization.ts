@@ -213,10 +213,12 @@ export class AudioProcessor {
       Math.floor(audioData.length / rate),
     ]);
 
-    const result = (await resized.reshape([-1]).array()) as number[];
+    // ⚡ Bolt Optimization: Use `.data()` instead of `.array()` to directly extract flat Float32Array
+    // from TensorFlow internal memory, eliminating parsing overhead and garbage collection pressure.
+    const result = await resized.data();
     inputTensor.dispose();
     resized.dispose();
-    return new Float32Array(result);
+    return result as Float32Array;
   }
 
   private async applyReverb(
