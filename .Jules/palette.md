@@ -1,5 +1,9 @@
 # Palette's Journal - Karatoken World Party
 
+## 2026-08-09 - Keyboard Scrollability and Live Region Announcements for Dynamic Outputs
+**Learning:** Scrollable containers (such as `<pre>` output blocks containing dynamic asynchronous command results) must have `tabindex="0"` and clear high-contrast focus outlines so keyboard-only users can navigate and scroll through their contents with arrow keys. Furthermore, pairing these with `aria-live="polite"` and descriptive, context-specific `aria-label` attributes ensures assistive technologies dynamically announce live status updates as they arrive without disrupting user flow.
+**Action:** Always provide `tabindex="0"`, `:focus-visible` styles, descriptive ARIA labels, and `aria-live` roles on scrollable dynamic output elements to ensure full keyboard and screen reader accessibility.
+
 ## 2026-08-07 - Dynamic Component Initialization in Tabbed Interfaces & Accessible Search Interactivity
 **Learning:** In tabbed interfaces like Bootstrap where components bind to tab toggle events (e.g., `'shown.bs.tab'`), the default active tab will fail to initialize on page load because the event is not triggered initially. This results in permanent loading spinners. Checking `classList.contains('active')` and immediately instantiating the component on startup fixes this deadlock. Furthermore, search forms require instant visual/loading feedback on search buttons alongside screen-reader descriptive `aria-label`s on duplicated action controls (such as list action items) to ensure smooth UX and full assistive technology accessibility.
 **Action:** Always instantiate active-by-default tabbed components on page load, and accompany asynchronous search queries with spinner-disabled button states and descriptive contextual `aria-label`s.
