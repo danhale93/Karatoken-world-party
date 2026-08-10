@@ -1,5 +1,9 @@
 # Palette's Journal - Karatoken World Party
 
+## 2026-08-10 - Safe Client Initialization & Prevent Duplicate Global Shortcuts
+**Learning:** Adding fallback stubs for missing class methods protects user-facing SPAs from fatal JavaScript type errors on initial page load or simple navigation clicks. Furthermore, keyboard event listeners on the global `document` must be registered exactly once during initialization (inside constructors or dedicated setup functions) rather than inside reactive or condition-based data updates to avoid cumulative event handlers, severe memory leaks, and duplicate execution states.
+**Action:** Always verify all invoked class methods have safe stub fallbacks on load to prevent fatal crashes, and strictly register global event listeners exactly once in initialization or constructors.
+
 ## 2026-08-09 - Keyboard Scrollability and Live Region Announcements for Dynamic Outputs
 **Learning:** Scrollable containers (such as `<pre>` output blocks containing dynamic asynchronous command results) must have `tabindex="0"` and clear high-contrast focus outlines so keyboard-only users can navigate and scroll through their contents with arrow keys. Furthermore, pairing these with `aria-live="polite"` and descriptive, context-specific `aria-label` attributes ensures assistive technologies dynamically announce live status updates as they arrive without disrupting user flow.
 **Action:** Always provide `tabindex="0"`, `:focus-visible` styles, descriptive ARIA labels, and `aria-live` roles on scrollable dynamic output elements to ensure full keyboard and screen reader accessibility.
