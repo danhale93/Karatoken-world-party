@@ -204,6 +204,11 @@ export class AudioProcessor {
     audioData: Float32Array,
     params: { semitones: number } = { semitones: 0 }
   ): Promise<Float32Array> {
+    // ⚡ Bolt Optimization: Early return if semitones is 0 (or no-op pitch shift is requested)
+    // This avoids heavy TensorFlow.js tensor initialization, billing resizing, and CPU/GPU memory transfers
+    if (!params || params.semitones === 0) {
+      return audioData;
+    }
     const rate = Math.pow(2, params.semitones / 12);
     const inputTensor = tf.tensor2d([audioData]);
 
