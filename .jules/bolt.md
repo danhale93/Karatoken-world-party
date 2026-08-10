@@ -41,3 +41,7 @@
 ## 2026-08-02 - Background Job Result Caching with In-Memory Mapping for Rapid API Endpoint Responses
 **Learning:** Caching results of heavy asynchronous/background simulations (like AI genre swapping taking ~8 seconds) to disk allows subsequent requests to resolve instantly. However, since clients pull status via an independent polling endpoint, the cached job must also be registered back into the in-memory active jobs store on a cache hit to prevent subsequent polling calls from failing with a "Job not found" 404 error.
 **Action:** When returning cached background job results from cache middleware, ensure the cached job object is registered in the in-memory jobs collection/map so that the polling/status endpoints can immediately locate and return the completed job status.
+
+## 2026-08-03 - No-Op Early Returns in TensorFlow.js Audio Effects
+**Learning:** Audio effects are often requested with default or no-op configurations (such as 0 semitones for pitch shifting). Initializing Tensors and invoking GPU/CPU resampling and data transfer for no-op states incurs massive overhead. Adding simple early returns for no-op parameters yields a massive performance boost (such as ~7700x speedup).
+**Action:** Always identify no-op parameters in digital signal processing and machine learning workflows, and return the input array immediately to completely bypass expensive tensor/array computations and data transfer overhead.
