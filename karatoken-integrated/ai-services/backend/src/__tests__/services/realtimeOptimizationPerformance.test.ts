@@ -1,6 +1,13 @@
 import { AudioProcessor } from '../../services/realtimeOptimization';
 import { AudioBuffer } from 'web-audio-api';
 
+let tf: any;
+try {
+  tf = require('@tensorflow/tfjs-node');
+} catch (err) {
+  tf = require('@tensorflow/tfjs');
+}
+
 // Original unoptimized implementations for comparison and verification
 function originalApplyEQ(audioData: Float32Array): Float32Array {
   const result = new Float32Array(audioData.length);
