@@ -45,3 +45,7 @@
 ## 2026-08-03 - No-Op Early Returns in TensorFlow.js Audio Effects
 **Learning:** Audio effects are often requested with default or no-op configurations (such as 0 semitones for pitch shifting). Initializing Tensors and invoking GPU/CPU resampling and data transfer for no-op states incurs massive overhead. Adding simple early returns for no-op parameters yields a massive performance boost (such as ~7700x speedup).
 **Action:** Always identify no-op parameters in digital signal processing and machine learning workflows, and return the input array immediately to completely bypass expensive tensor/array computations and data transfer overhead.
+
+## 2026-08-04 - Promise Caching for Inflight Request Coalescing and Async I/O
+**Learning:** Heavy AI or pipeline operations (like BERTweet emotion classification) can trigger multiple concurrent calls for the same text before the first call completes. Simply caching resolved results does not prevent duplicate inflight executions. Caching the active Promise immediately coalesces all concurrent duplicate requests to a single execution (saving O(n) heavy inference runs down to 1), while replacing blocking sync fs operations with async fs.promises prevents Event Loop lag.
+**Action:** Always cache the active Promise (or inflight task) rather than just the final value when handling resource-intensive or asynchronous caching workflows, and ensure all I/O is asynchronous to keep the main thread fully responsive.
