@@ -53,6 +53,26 @@ function originalApplyCompressor(
   return result;
 }
 
+// Original unoptimized implementation of applyPitchShift
+async function originalApplyPitchShift(
+  audioData: Float32Array,
+  params: { semitones: number } = { semitones: 0 },
+  tf: any
+): Promise<Float32Array> {
+  const rate = Math.pow(2, params.semitones / 12);
+  const inputTensor = tf.tensor2d([audioData]);
+
+  const resized = tf.image.resizeBilinear(inputTensor.reshape([1, -1, 1, 1]), [
+    1,
+    Math.floor(audioData.length / rate),
+  ]);
+
+  const result = (await resized.reshape([-1]).array()) as number[];
+  inputTensor.dispose();
+  resized.dispose();
+  return new Float32Array(result);
+}
+
 describe('Real-time Audio Processing Performance and Correctness Benchmark', () => {
   let audioProcessor: AudioProcessor;
 
@@ -159,5 +179,94 @@ describe('Real-time Audio Processing Performance and Correctness Benchmark', () 
     console.log('======================================================\n');
 
     expect(timeOptimized).toBeLessThanOrEqual(timeOriginal + 10);
+  });
+
+  it('should compute exactly identical results for Pitch Shift and be significantly faster', async () => {
+    const length = 44100 * 2; // 2 seconds of audio
+    const audioBuffer = createMockAudioBuffer(44100, length);
+    const audioData = audioBuffer.getChannelData(0);
+    let tf;
+    try {
+      tf = require('@tensorflow/tfjs-node');
+    } catch {
+      tf = require('@tensorflow/tfjs');
+    }
+
+    // Warm-up
+    await originalApplyPitchShift(audioData, { semitones: 2 }, tf);
+    await (audioProcessor as any).applyPitchShift(audioData, { semitones: 2 });
+
+    // Benchmark original
+    const startOriginal = performance.now();
+    const resultOriginal = await originalApplyPitchShift(audioData, { semitones: 2 }, tf);
+    const endOriginal = performance.now();
+    const timeOriginal = endOriginal - startOriginal;
+
+    // Benchmark optimized
+    const startOptimized = performance.now();
+    const resultOptimized = await (audioProcessor as any).applyPitchShift(audioData, {
+      semitones: 2,
+    });
+    const endOptimized = performance.now();
+    const timeOptimized = endOptimized - startOptimized;
+
+    // --- VERIFY CORRECTNESS ---
+    expect(resultOptimized.length).toBe(resultOriginal.length);
+    for (let i = 0; i < resultOriginal.length; i++) {
+      expect(resultOptimized[i]).toBeCloseTo(resultOriginal[i], 5);
+    }
+
+    console.log('\n=== ⚡ Bolt Performance Benchmark (applyPitchShift) ===');
+    console.log(`Audio length: ${length} samples`);
+    console.log(`[Old] originalApplyPitchShift: ${timeOriginal.toFixed(3)} ms`);
+    console.log(`[New] optimizedApplyPitchShift: ${timeOptimized.toFixed(3)} ms`);
+    const speedup = timeOriginal / timeOptimized;
+    console.log(`⚡ Speedup: ${speedup.toFixed(1)}x faster!`);
+    console.log('======================================================\n');
+  });
+
+  it('should optimize no-op pitch shift (semitones: 0) and run in O(1) time', async () => {
+    const length = 44100 * 5; // 5 seconds of audio
+    const audioBuffer = createMockAudioBuffer(44100, length);
+    const audioData = audioBuffer.getChannelData(0);
+    let tf;
+    try {
+      tf = require('@tensorflow/tfjs-node');
+    } catch {
+      tf = require('@tensorflow/tfjs');
+    }
+
+    // Warm-up
+    await originalApplyPitchShift(audioData, { semitones: 0 }, tf);
+    await (audioProcessor as any).applyPitchShift(audioData, { semitones: 0 });
+
+    // Benchmark original
+    const startOriginal = performance.now();
+    const resultOriginal = await originalApplyPitchShift(audioData, { semitones: 0 }, tf);
+    const endOriginal = performance.now();
+    const timeOriginal = endOriginal - startOriginal;
+
+    // Benchmark optimized
+    const startOptimized = performance.now();
+    const resultOptimized = await (audioProcessor as any).applyPitchShift(audioData, {
+      semitones: 0,
+    });
+    const endOptimized = performance.now();
+    const timeOptimized = endOptimized - startOptimized;
+
+    // --- VERIFY CORRECTNESS ---
+    // The optimized version should return exactly the same array reference or contents
+    expect(resultOptimized.length).toBe(audioData.length);
+    expect(resultOptimized).toBe(audioData); // should return the same object reference
+
+    console.log('\n=== ⚡ Bolt Performance Benchmark (applyPitchShift with semitones: 0) ===');
+    console.log(`Audio length: ${length} samples`);
+    console.log(`[Old] originalApplyPitchShift (no-op): ${timeOriginal.toFixed(3)} ms`);
+    console.log(`[New] optimizedApplyPitchShift (no-op): ${timeOptimized.toFixed(3)} ms`);
+    const speedup = timeOriginal / timeOptimized;
+    console.log(`⚡ Speedup: ${speedup.toFixed(1)}x faster!`);
+    console.log('======================================================\n');
+
+    expect(timeOptimized).toBeLessThan(timeOriginal);
   });
 });

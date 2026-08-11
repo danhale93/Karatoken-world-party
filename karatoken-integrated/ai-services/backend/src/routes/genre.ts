@@ -4,8 +4,7 @@ import { createServer } from 'http';
 import path from 'path';
 import { Server } from 'socket.io';
 
-// TODO: Uncomment when rate limiting is needed
-// import rateLimit from 'express-rate-limit';
+import { createRateLimiter } from '../services/rateLimiter';
 
 // Types
 enum JobStatus {
@@ -55,15 +54,8 @@ if (ENABLE_CACHE && !fs.existsSync(CACHE_DIR)) {
 const router = express.Router();
 const jobs = new Map<string, Job>();
 
-// TODO: Uncomment and implement rate limiting when needed
-const apiLimiter: RequestHandler = (req, res, next) => next();
-/*
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests, please try again later',
-});
-*/
+// In-memory rate limiting to mitigate DoS/abuse on the CPU-intensive genre swap route (CWE-400)
+const apiLimiter = createRateLimiter(60000, 15); // 15 requests per minute
 
 // Socket.IO setup
 export let io: Server;

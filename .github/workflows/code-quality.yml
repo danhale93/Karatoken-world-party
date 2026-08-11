@@ -26,6 +26,7 @@ jobs:
       - name: Install dependencies
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          YOUTUBE_DL_SKIP_DOWNLOAD: 'true'
         run: npm ci --legacy-peer-deps
         
       - name: Run ESLint
@@ -53,6 +54,7 @@ jobs:
       - name: Install dependencies
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          YOUTUBE_DL_SKIP_DOWNLOAD: 'true'
         run: npm ci --legacy-peer-deps
         
       - name: Run tests with coverage

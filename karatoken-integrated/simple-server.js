@@ -6,12 +6,20 @@ const PORT = 3000;
 const WEB_DIR = path.join(__dirname, 'web');
 
 const server = http.createServer((req, res) => {
-  const cleanUrl = req.url.split('?')[0];
-  let filePath = path.join(WEB_DIR, cleanUrl === '/' ? 'index.html' : cleanUrl);
+  const urlPath = req.url.split('?')[0];
+  let filePath = path.join(WEB_DIR, urlPath === '/' ? 'index.html' : urlPath);
   
   // Default to index.html if the path doesn't have an extension
   if (!path.extname(filePath)) {
     filePath = path.join(WEB_DIR, 'index.html');
+  }
+
+  // Validate the path starts within WEB_DIR boundary, and is not absolute or going up
+  const relative = path.relative(WEB_DIR, filePath);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: false, error: 'Invalid path' }));
+    return;
   }
 
   const extname = String(path.extname(filePath)).toLowerCase();
