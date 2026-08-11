@@ -305,7 +305,44 @@ class MCPClient {
           this.showError("stylus", "Failed to start job: " + error.message);
         }
       });
+
+    // Ctrl+Enter keyboard shortcuts for form submissions
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.key === "Enter") {
+        const activeElement = document.activeElement;
+        if (activeElement) {
+          const form = activeElement.closest("form");
+          if (form) {
+            if (form.id === "genreSwapForm" || form.id === "stylusForm") {
+              const submitBtn = form.querySelector('button[type="submit"]');
+              if (submitBtn && !submitBtn.disabled) {
+                e.preventDefault();
+                form.requestSubmit();
+              }
+            }
+          }
+        }
+      }
+    });
   }
+
+  // Safe stubs to prevent page crashes on load, refresh, and tab clicks
+  loadJobHistory() {
+    this.jobHistory = [];
+  }
+  updateJobHistory() {}
+  clearJobHistory() {}
+  trackJob(type, jobId, formId) {
+    console.log(`Tracking job ${jobId} of type ${type} from form ${formId}`);
+  }
+  getStatusClass(status) {
+    if (!status) return "badge-secondary";
+    return status.toLowerCase() === "completed" ? "badge-success" : "badge-secondary";
+  }
+  getJobActionsHtml() {
+    return "";
+  }
+  attachJobActionHandlers() {}
 
   // Show toast notification
   showToast(title, message, type = "info") {

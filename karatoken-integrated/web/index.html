@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=2" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header>
@@ -19,7 +19,7 @@
       <section class="card">
         <h2>Backend Health</h2>
         <button id="btn-health">Check Health</button>
-        <pre id="health-output" class="output">Click "Check Health"</pre>
+        <pre id="health-output" class="output" tabindex="0" aria-live="polite" aria-label="Health check response output">Click "Check Health"</pre>
       </section>
 
       <section class="card">
@@ -63,7 +63,7 @@
           </div>
         </div>
         
-        <div id="yt-search-out" class="search-results">
+        <div id="yt-search-out" class="search-results" tabindex="0" aria-live="polite" aria-label="YouTube search results">
           <div class="placeholder">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" fill="#FF0000" fill-opacity="0.1" stroke="#FF0000" stroke-width="2"/>
@@ -73,7 +73,7 @@
           </div>
         </div>
         
-        <div id="yt-dl-out" class="download-status"></div>
+        <div id="yt-dl-out" class="download-status" tabindex="0" aria-live="polite" aria-label="YouTube download status"></div>
       </section>
 
       <section class="card">
@@ -121,7 +121,7 @@
             <div id="progress-details" class="progress-details"></div>
           </div>
         </div>
-        <pre id="genre-swap-out" class="output">Waiting…</pre>
+        <pre id="genre-swap-out" class="output" tabindex="0" aria-live="polite" aria-label="Genre swap status and results output">Waiting…</pre>
         <div class="row">
           <audio id="genre-audio" controls class="audio-player"></audio>
         </div>
@@ -133,7 +133,7 @@
               <span id="copy-text">Copy LRC</span>
             </button>
           </div>
-          <pre id="genre-lrc" class="output lrc-output" tabindex="0" aria-label="LRC lyrics preview output">LRC will appear here…</pre>
+          <pre id="genre-lrc" class="output lrc-output" tabindex="0" aria-live="polite" aria-label="LRC lyrics preview output">LRC will appear here…</pre>
         </div>
       </section>
 
@@ -149,7 +149,7 @@
           <input id="state" placeholder="XYZ" />
         </div>
         <button id="btn-callback">Send Callback</button>
-        <pre id="callback-output" class="output">Waiting…</pre>
+        <pre id="callback-output" class="output" tabindex="0" aria-live="polite" aria-label="Spotify callback response output">Waiting…</pre>
       </section>
     </main>
 
@@ -157,6 +157,6 @@
       <small> Karatoken Preview</small>
     </footer>
 
-    <script src="script.js?v=3"></script>
+    <script src="script.js"></script>
   </body>
 </html>
