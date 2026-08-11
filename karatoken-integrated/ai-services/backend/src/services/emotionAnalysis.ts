@@ -69,8 +69,8 @@ export async function analyzeEmotion(text: string): Promise<EmotionResult> {
   }
 }
 
-// Cache layer for emotion analysis
-const emotionCache: { [key: string]: EmotionResult } = {};
+// Cache layer for emotion analysis (allows caching both completed EmotionResult and active Promise<EmotionResult> to coalesce concurrent lookups)
+const emotionCache: { [key: string]: EmotionResult | Promise<EmotionResult> } = {};
 const CACHE_DIR = path.join(process.cwd(), '.cache', 'emotion');
 
 // Ensure cache directory exists
@@ -82,28 +82,51 @@ export async function analyzeEmotionWithCache(text: string): Promise<EmotionResu
   const hash = createHash('md5').update(text).digest('hex');
   const cacheFile = path.join(CACHE_DIR, `${hash}.json`);
 
-  try {
-    // Check in-memory cache first
-    if (emotionCache[hash]) {
-      return emotionCache[hash];
-    }
+  // Check in-memory cache first (could be a concrete result or a Promise of an active inflight request)
+  if (emotionCache[hash]) {
+    return emotionCache[hash];
+  }
 
-    // Check disk cache
-    if (fs.existsSync(cacheFile)) {
-      const cached = JSON.parse(fs.readFileSync(cacheFile, 'utf-8'));
+  // Create an async operation to load/analyze/write and store it in-memory as a Promise immediately.
+  // This coalesces any concurrent, duplicate incoming requests for the same text to a single execution.
+  const promise = (async (): Promise<EmotionResult> => {
+    try {
+      // ⚡ Bolt Optimization: Asynchronously read disk cache using fs.promises.readFile.
+      // This prevents blocking the main thread (event loop) with synchronous I/O system calls.
+      const cacheData = await fs.promises.readFile(cacheFile, 'utf-8');
+      const cached = JSON.parse(cacheData) as EmotionResult;
+      // Replace the Promise in cache with the concrete result for faster subsequent accesses
       emotionCache[hash] = cached;
       return cached;
+    } catch (readError: any) {
+      if (readError.code !== 'ENOENT') {
+        console.warn('Disk cache read error:', readError);
+      }
     }
 
-    // Analyze and cache the result
+    // Run the actual classifier analysis
     const result = await analyzeEmotion(text);
 
-    // Update caches
-    emotionCache[hash] = result;
-    fs.writeFileSync(cacheFile, JSON.stringify(result), 'utf-8');
+    try {
+      // ⚡ Bolt Optimization: Asynchronously write to disk cache using fs.promises.writeFile.
+      // This avoids blocking the event loop when writing new results.
+      await fs.promises.writeFile(cacheFile, JSON.stringify(result), 'utf-8');
+    } catch (writeError) {
+      console.warn('Disk cache write error:', writeError);
+    }
 
+    // Replace the Promise in cache with the concrete result
+    emotionCache[hash] = result;
     return result;
+  })();
+
+  emotionCache[hash] = promise;
+
+  try {
+    return await promise;
   } catch (error) {
+    // If anything fails during the caching flow, clear the cache entry so future retries can run
+    delete emotionCache[hash];
     console.error('Error in cached emotion analysis:', error);
     return analyzeEmotion(text); // Fall back to non-cached version
   }
