@@ -375,9 +375,13 @@
         genreAudioUrlInput.value = data.url;
         // Trigger audio preview update
         updateAudioPreview();
+        updateSwapButtonState();
+        highlightInput(genreAudioUrlInput);
       } else if (data.file && genreAudioUrlInput) {
         // Fallback to local path (less ideal for web usage)
         genreAudioUrlInput.value = data.file;
+        updateSwapButtonState();
+        highlightInput(genreAudioUrlInput);
       }
 
       ytDlOut.innerHTML = `
@@ -695,6 +699,21 @@
       genreSwapBtn.setAttribute('title', 'Swap Genre (Ctrl + Enter)');
       genreSwapBtn.setAttribute('aria-label', 'Swap Genre (Ctrl + Enter)');
     }
+  }
+
+  // Highlight input with a pleasant visual pulse
+  function highlightInput(input) {
+    if (!input) return;
+    input.focus();
+    input.style.setProperty('border-color', 'var(--success)', 'important');
+    input.style.setProperty('box-shadow', '0 0 0 4px rgba(16, 185, 129, 0.25)', 'important');
+    input.style.setProperty('transition', 'all 0.3s ease-in-out', 'important');
+
+    setTimeout(() => {
+      input.style.removeProperty('border-color');
+      input.style.removeProperty('box-shadow');
+      input.style.removeProperty('transition');
+    }, 2000);
   }
   
   genreAudioUrlInput?.addEventListener('input', updateSwapButtonState);

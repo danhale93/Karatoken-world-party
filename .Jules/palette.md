@@ -1,5 +1,9 @@
 # Palette's Journal - Karatoken World Party
 
+## 2026-08-11 - Accessible Dynamic Load Announcements and Focus Transitions on Programmatic Inputs
+**Learning:** Asynchronous updates (such as YouTube search results or download status updates) must reside within containers that use `aria-live="polite"` and explicit `aria-label` tags so screen readers automatically announce dynamic content changes. Furthermore, when background processes programmatically populate form fields (like auto-filling an Audio URL input after download), we must manually invoke the validation state listeners (`updateSwapButtonState()`) to prevent stale button states and seamlessly guide user focus and sight using a temporary localized visual pulse/glow (such as `var(--success)`) on the updated elements.
+**Action:** Always wrap async dynamic sections in accessible live regions, manually synchronize UI validation states on programmatic input changes, and provide temporary focus and styling transitions to direct user attention smoothly.
+
 ## 2026-08-10 - Safe Client Initialization & Prevent Duplicate Global Shortcuts
 **Learning:** Adding fallback stubs for missing class methods protects user-facing SPAs from fatal JavaScript type errors on initial page load or simple navigation clicks. Furthermore, keyboard event listeners on the global `document` must be registered exactly once during initialization (inside constructors or dedicated setup functions) rather than inside reactive or condition-based data updates to avoid cumulative event handlers, severe memory leaks, and duplicate execution states.
 **Action:** Always verify all invoked class methods have safe stub fallbacks on load to prevent fatal crashes, and strictly register global event listeners exactly once in initialization or constructors.
