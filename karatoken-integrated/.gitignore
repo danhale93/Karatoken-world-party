@@ -82,3 +82,8 @@ blockchain/typechain-types/
 blockchain/coverage/
 blockchain/coverage.json
 blockchain/typechain/
+
+# Local outputs & Cache
+**/tmp/
+**/.cache/
+*.log
