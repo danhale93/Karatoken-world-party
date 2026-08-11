@@ -208,6 +208,15 @@
       .replace(/'/g, '&#39;');
   }
 
+  function sanitizeUrl(u) {
+    if (!u) return '';
+    const trimmed = u.trim();
+    if (trimmed.startsWith('/') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    return '';
+  }
+
   function formatDuration(seconds) {
     if (!seconds) return '';
     const mins = Math.floor(seconds / 60);
@@ -375,9 +384,13 @@
         genreAudioUrlInput.value = data.url;
         // Trigger audio preview update
         updateAudioPreview();
+        updateSwapButtonState();
+        highlightInput(genreAudioUrlInput);
       } else if (data.file && genreAudioUrlInput) {
         // Fallback to local path (less ideal for web usage)
         genreAudioUrlInput.value = data.file;
+        updateSwapButtonState();
+        highlightInput(genreAudioUrlInput);
       }
 
       ytDlOut.innerHTML = `
@@ -477,21 +490,31 @@
             const lrcName = lrcUrl ? (lrcUrl.split('/').pop() || 'lyrics.lrc') : null;
             const outDl = toDlUrl(outUrl);
             const lrcDl = toDlUrl(lrcUrl);
+
+            const safeStatus = escapeHTML(job.status);
+            const safeProgress = escapeHTML(job.progress);
+            const safeOutDl = escapeHTML(sanitizeUrl(outDl));
+            const safeOutUrl = escapeHTML(sanitizeUrl(outUrl));
+            const safeLrcDl = escapeHTML(sanitizeUrl(lrcDl));
+            const safeLrcUrl = escapeHTML(sanitizeUrl(lrcUrl));
+            const safeOutName = escapeHTML(outName);
+            const safeLrcName = escapeHTML(lrcName);
+
             // Render clickable links to outputs
             const lines = [];
-            lines.push(`<div><strong>Status:</strong> ${job.status} (${job.progress}%)</div>`);
-            if (outUrl) {
-              if (outDl) {
-                lines.push(`<div><a href="${outDl}" download="${outName}">Download Output</a> <small><a href="${outUrl}" target="_blank" rel="noopener">(open)</a></small></div>`);
+            lines.push(`<div><strong>Status:</strong> ${safeStatus} (${safeProgress}%)</div>`);
+            if (outUrl && safeOutUrl) {
+              if (outDl && safeOutDl) {
+                lines.push(`<div><a href="${safeOutDl}" download="${safeOutName}">Download Output</a> <small><a href="${safeOutUrl}" target="_blank" rel="noopener">(open)</a></small></div>`);
               } else {
-                lines.push(`<div><a href="${outUrl}" download="${outName}" target="_blank" rel="noopener">Download Output</a></div>`);
+                lines.push(`<div><a href="${safeOutUrl}" download="${safeOutName}" target="_blank" rel="noopener">Download Output</a></div>`);
               }
             }
-            if (lrcUrl) {
-              if (lrcDl) {
-                lines.push(`<div><a href="${lrcDl}" download="${lrcName}">Download LRC</a> <small><a href="${lrcUrl}" target="_blank" rel="noopener">(open)</a></small></div>`);
+            if (lrcUrl && safeLrcUrl) {
+              if (lrcDl && safeLrcDl) {
+                lines.push(`<div><a href="${safeLrcDl}" download="${safeLrcName}">Download LRC</a> <small><a href="${safeLrcUrl}" target="_blank" rel="noopener">(open)</a></small></div>`);
               } else {
-                lines.push(`<div><a href="${lrcUrl}" download="${lrcName}" target="_blank" rel="noopener">Download LRC</a></div>`);
+                lines.push(`<div><a href="${safeLrcUrl}" download="${safeLrcName}" target="_blank" rel="noopener">Download LRC</a></div>`);
               }
             }
             genreSwapOut.innerHTML = lines.join('\n');
@@ -695,6 +718,21 @@
       genreSwapBtn.setAttribute('title', 'Swap Genre (Ctrl + Enter)');
       genreSwapBtn.setAttribute('aria-label', 'Swap Genre (Ctrl + Enter)');
     }
+  }
+
+  // Highlight input with a pleasant visual pulse
+  function highlightInput(input) {
+    if (!input) return;
+    input.focus();
+    input.style.setProperty('border-color', 'var(--success)', 'important');
+    input.style.setProperty('box-shadow', '0 0 0 4px rgba(16, 185, 129, 0.25)', 'important');
+    input.style.setProperty('transition', 'all 0.3s ease-in-out', 'important');
+
+    setTimeout(() => {
+      input.style.removeProperty('border-color');
+      input.style.removeProperty('box-shadow');
+      input.style.removeProperty('transition');
+    }, 2000);
   }
   
   genreAudioUrlInput?.addEventListener('input', updateSwapButtonState);

@@ -204,6 +204,11 @@ export class AudioProcessor {
     audioData: Float32Array,
     params: { semitones: number } = { semitones: 0 }
   ): Promise<Float32Array> {
+    // ⚡ Bolt Optimization: Early return if semitones is 0 (or no-op pitch shift is requested)
+    // This avoids heavy TensorFlow.js tensor initialization, billing resizing, and CPU/GPU memory transfers
+    if (!params || params.semitones === 0) {
+      return audioData;
+    }
     const rate = Math.pow(2, params.semitones / 12);
     const inputTensor = tf.tensor2d([audioData]);
 
@@ -213,10 +218,12 @@ export class AudioProcessor {
       Math.floor(audioData.length / rate),
     ]);
 
-    const result = (await resized.reshape([-1]).array()) as number[];
+    // ⚡ Bolt Optimization: Use `.data()` instead of `.array()` to directly extract flat Float32Array
+    // from TensorFlow internal memory, eliminating parsing overhead and garbage collection pressure.
+    const result = await resized.data();
     inputTensor.dispose();
     resized.dispose();
-    return new Float32Array(result);
+    return result as Float32Array;
   }
 
   private async applyReverb(
