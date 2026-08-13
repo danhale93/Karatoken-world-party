@@ -1,5 +1,9 @@
 # Palette's Journal - Karatoken World Party
 
+## 2026-08-13 - State-Synchronized Disabled Form Controls with Explanatory Tooltips and ARIA Attributes
+**Learning:** Initializing form buttons with disabled states is highly useful, but we must pair them with reactive input validation listeners and dynamic accessibility descriptors. If validation triggers are called on page load but not defined, they will cause fatal script ReferenceError crashes. Ensuring validator helper functions are fully defined, bound to input events, and update both visual `title` and screen-reader `aria-label` attributes prevents confusing, empty, or malformed form submissions.
+**Action:** Always provide robust, reactive validators that update button disabled properties, visual tooltips, and corresponding screen-reader ARIA labels, and ensure all invoked initialization helpers are fully defined to avoid fatal loading-time script crashes.
+
 ## 2026-08-11 - Accessible Dynamic Load Announcements and Focus Transitions on Programmatic Inputs
 **Learning:** Asynchronous updates (such as YouTube search results or download status updates) must reside within containers that use `aria-live="polite"` and explicit `aria-label` tags so screen readers automatically announce dynamic content changes. Furthermore, when background processes programmatically populate form fields (like auto-filling an Audio URL input after download), we must manually invoke the validation state listeners (`updateSwapButtonState()`) to prevent stale button states and seamlessly guide user focus and sight using a temporary localized visual pulse/glow (such as `var(--success)`) on the updated elements.
 **Action:** Always wrap async dynamic sections in accessible live regions, manually synchronize UI validation states on programmatic input changes, and provide temporary focus and styling transitions to direct user attention smoothly.
