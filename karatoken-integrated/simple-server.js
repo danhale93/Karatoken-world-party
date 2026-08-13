@@ -5,6 +5,13 @@ const path = require('path');
 const PORT = 3000;
 const WEB_DIR = path.join(__dirname, 'web');
 
+const SECURE_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'strict-origin-when-cross-origin'
+};
+
 const server = http.createServer((req, res) => {
   const urlPath = req.url.split('?')[0];
   let filePath = path.join(WEB_DIR, urlPath === '/' ? 'index.html' : urlPath);
@@ -17,7 +24,7 @@ const server = http.createServer((req, res) => {
   // Validate the path starts within WEB_DIR boundary, and is not absolute or going up
   const relative = path.relative(WEB_DIR, filePath);
   if (relative.startsWith('..') || path.isAbsolute(relative)) {
-    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.writeHead(400, { 'Content-Type': 'application/json', ...SECURE_HEADERS });
     res.end(JSON.stringify({ ok: false, error: 'Invalid path' }));
     return;
   }
@@ -48,17 +55,17 @@ const server = http.createServer((req, res) => {
       if(error.code === 'ENOENT') {
         // Page not found
         fs.readFile(path.join(WEB_DIR, '404.html'), (error, content) => {
-          res.writeHead(404, { 'Content-Type': 'text/html' });
+          res.writeHead(404, { 'Content-Type': 'text/html', ...SECURE_HEADERS });
           res.end(content || '404 Not Found');
         });
       } else {
         // Server error
-        res.writeHead(500);
+        res.writeHead(500, { 'Content-Type': 'text/plain', ...SECURE_HEADERS });
         res.end('Server Error: ' + error.code);
       }
     } else {
       // Success
-      res.writeHead(200, { 'Content-Type': contentType });
+      res.writeHead(200, { 'Content-Type': contentType, ...SECURE_HEADERS });
       res.end(content, 'utf-8');
     }
   });

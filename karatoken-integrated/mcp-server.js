@@ -8,7 +8,60 @@ const config = require('./mcp-config.json');
 const GenreSwapWorker = require('./workers/GenreSwapWorker');
 const StylusWorker = require('./workers/StylusWorker');
 
+// Lightweight in-memory rate limiting to protect resource-heavy CPU endpoints from DoS (CWE-400)
+const activeLimiters = [];
+function createRateLimiter(windowMs, maxRequests) {
+  const tracker = new Map();
+  activeLimiters.push(tracker);
+
+  return (req, res, next) => {
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const now = Date.now();
+
+    if (!tracker.has(ip)) {
+      tracker.set(ip, []);
+    }
+
+    const timestamps = tracker.get(ip) || [];
+    const validTimestamps = timestamps.filter(timestamp => now - timestamp < windowMs);
+
+    if (validTimestamps.length >= maxRequests) {
+      return res.status(429).json({
+        error: 'Too many requests from this IP, please try again later.'
+      });
+    }
+
+    validTimestamps.push(now);
+    tracker.set(ip, validTimestamps);
+    return next();
+  };
+}
+
+// Background cleanup interval to prevent unbounded memory growth from stale IP keys (CWE-400)
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+const cleanupInterval = setInterval(() => {
+  const now = Date.now();
+  activeLimiters.forEach(tracker => {
+    for (const [ip, timestamps] of tracker.entries()) {
+      const filtered = timestamps.filter(timestamp => now - timestamp < 60 * 60 * 1000);
+      if (filtered.length === 0) {
+        tracker.delete(ip);
+      } else {
+        tracker.set(ip, filtered);
+      }
+    }
+  });
+}, CLEANUP_INTERVAL_MS);
+
+if (typeof cleanupInterval.unref === 'function') {
+  cleanupInterval.unref();
+}
+
 class MCPServer {
+  static resetRateLimiters() {
+    activeLimiters.forEach(tracker => tracker.clear());
+  }
+
   constructor() {
     this.app = express();
     this.app.disable('x-powered-by');
@@ -56,6 +109,8 @@ class MCPServer {
   }
 
   setupRoutes() {
+    const apiLimiter = createRateLimiter(60000, 15);
+
     // Health check endpoint
     this.app.get('/health', (req, res) => {
       res.json({ 
@@ -67,7 +122,7 @@ class MCPServer {
     });
 
     // Process endpoint
-    this.app.post('/process', async (req, res) => {
+    this.app.post('/process', apiLimiter, async (req, res) => {
       try {
         const { type, data } = req.body;
         
@@ -144,7 +199,7 @@ class MCPServer {
     });
     
     // Minimal API: Genre swap entrypoint expected by the UI
-    this.app.post('/api/genre/swap', async (req, res) => {
+    this.app.post('/api/genre/swap', apiLimiter, async (req, res) => {
       try {
         const { audioUrl, targetGenre } = req.body || {};
 

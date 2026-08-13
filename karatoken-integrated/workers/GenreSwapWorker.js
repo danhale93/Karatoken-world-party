@@ -27,6 +27,11 @@ class GenreSwapWorker extends BaseWorker {
   }
 
   async processGenreSwap(audioPath, genre) {
+    // Defense in depth validation for genre
+    if (typeof genre !== 'string' || !/^[a-zA-Z0-9\s_-]+$/.test(genre)) {
+      throw new Error('Invalid genre format');
+    }
+
     // Simulate genre swap processing
     console.log(`Processing genre swap for ${audioPath} to ${genre}...`);
     
