@@ -255,18 +255,17 @@ export class AudioProcessor {
     }
 
     // Mix wet and dry signals
-    // ⚡ Bolt Optimization: Access audioData directly as the dry signal.
-    // This avoids allocating a second "dry" Float32Array altogether, saving substantial memory.
-    const result = new Float32Array(audioData.length);
-    for (let i = 0; i < result.length; i += 1) {
-      result[i] = audioData[i] * 0.7 + wet[i] * 0.3; // 70% dry, 30% wet
+    // ⚡ Bolt Optimization: Access audioData directly as the dry signal and mix in-place on the wet array.
+    // This avoids allocating a separate output/result Float32Array altogether, saving 50% memory allocation.
+    for (let i = 0; i < wet.length; i += 1) {
+      wet[i] = audioData[i] * 0.7 + wet[i] * 0.3; // 70% dry, 30% wet
     }
 
     if (reverse) {
-      result.reverse();
+      wet.reverse();
     }
 
-    return result;
+    return wet;
   }
 
   private applyEQ(audioData: Float32Array, params: { frequency?: number } = {}): Float32Array {

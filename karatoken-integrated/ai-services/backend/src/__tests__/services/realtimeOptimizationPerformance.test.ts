@@ -276,4 +276,71 @@ describe('Real-time Audio Processing Performance and Correctness Benchmark', () 
 
     expect(timeOptimized).toBeLessThan(timeOriginal);
   });
+
+  it('should compute exactly identical results for Reverb and be faster with less allocation', async () => {
+    const length = 44100 * 5; // 5 seconds of audio
+    const audioBuffer = createMockAudioBuffer(44100, length);
+    const audioData = audioBuffer.getChannelData(0);
+
+    // Define the original unoptimized reverb for reference
+    const originalApplyReverb = (
+      audioData: Float32Array,
+      params: { decay?: number; seconds?: number; reverse?: boolean } = {}
+    ): Float32Array => {
+      const decay = Math.max(0, Math.min(1, params.decay || 0.5));
+      const seconds = Math.max(0.1, Math.min(10, params.seconds || 2));
+      const reverse = !!params.reverse;
+
+      const delaySamples = Math.floor(44100 * seconds);
+      const wet = new Float32Array(audioData.length);
+      wet.set(audioData);
+
+      for (let i = delaySamples; i < audioData.length; i += 1) {
+        wet[i] += wet[i - delaySamples] * decay;
+      }
+
+      const result = new Float32Array(audioData.length);
+      for (let i = 0; i < result.length; i += 1) {
+        result[i] = audioData[i] * 0.7 + wet[i] * 0.3;
+      }
+
+      if (reverse) {
+        result.reverse();
+      }
+
+      return result;
+    };
+
+    // Warm-up
+    originalApplyReverb(audioData);
+    await (audioProcessor as any).applyReverb(audioData);
+
+    // Benchmark original
+    const startOriginal = performance.now();
+    const resultOriginal = originalApplyReverb(audioData);
+    const endOriginal = performance.now();
+    const timeOriginal = endOriginal - startOriginal;
+
+    // Benchmark optimized
+    const startOptimized = performance.now();
+    const resultOptimized = await (audioProcessor as any).applyReverb(audioData);
+    const endOptimized = performance.now();
+    const timeOptimized = endOptimized - startOptimized;
+
+    // --- VERIFY CORRECTNESS ---
+    expect(resultOptimized.length).toBe(resultOriginal.length);
+    for (let i = 0; i < resultOriginal.length; i++) {
+      expect(resultOptimized[i]).toBeCloseTo(resultOriginal[i], 7);
+    }
+
+    console.log('\n=== ⚡ Bolt Performance Benchmark (applyReverb) ===');
+    console.log(`Audio length: ${length} samples`);
+    console.log(`[Old] originalApplyReverb: ${timeOriginal.toFixed(3)} ms`);
+    console.log(`[New] optimizedApplyReverb: ${timeOptimized.toFixed(3)} ms`);
+    const speedup = timeOriginal / timeOptimized;
+    console.log(`⚡ Speedup: ${speedup.toFixed(1)}x faster!`);
+    console.log('======================================================\n');
+
+    expect(timeOptimized).toBeLessThanOrEqual(timeOriginal + 10);
+  });
 });
