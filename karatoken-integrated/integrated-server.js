@@ -20,32 +20,55 @@ app.use((req, res, next) => {
   next();
 });
 
-// Simple, lightweight in-memory rate limiter to protect sensitive or heavy endpoints from Denial of Service (DoS)
-const rateLimits = new Map();
+// Simple, lightweight in-memory rate limiter to protect sensitive or heavy endpoints from Denial of Service (DoS) (CWE-400)
+const activeLimiters = [];
 function rateLimiter(windowMs, maxRequests) {
+  const tracker = new Map();
+  activeLimiters.push(tracker);
+
   return (req, res, next) => {
-    const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
     const now = Date.now();
 
-    if (!rateLimits.has(ip)) {
-      rateLimits.set(ip, []);
+    if (!tracker.has(ip)) {
+      tracker.set(ip, []);
     }
 
-    let timestamps = rateLimits.get(ip);
+    const timestamps = tracker.get(ip) || [];
     // Filter timestamps older than the window
-    timestamps = timestamps.filter(time => now - time < windowMs);
+    const validTimestamps = timestamps.filter(time => now - time < windowMs);
 
-    if (timestamps.length >= maxRequests) {
+    if (validTimestamps.length >= maxRequests) {
       return res.status(429).json({
         ok: false,
         error: 'Too many requests from this IP, please try again later.'
       });
     }
 
-    timestamps.push(now);
-    rateLimits.set(ip, timestamps);
+    validTimestamps.push(now);
+    tracker.set(ip, validTimestamps);
     next();
   };
+}
+
+// Background cleanup interval to prevent unbounded memory growth from stale IP keys (CWE-400)
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+const cleanupInterval = setInterval(() => {
+  const now = Date.now();
+  activeLimiters.forEach(tracker => {
+    for (const [ip, timestamps] of tracker.entries()) {
+      const filtered = timestamps.filter(timestamp => now - timestamp < 60 * 60 * 1000);
+      if (filtered.length === 0) {
+        tracker.delete(ip);
+      } else {
+        tracker.set(ip, filtered);
+      }
+    }
+  });
+}, CLEANUP_INTERVAL_MS);
+
+if (typeof cleanupInterval.unref === 'function') {
+  cleanupInterval.unref();
 }
 
 // Create HTTP server for Socket.IO
@@ -541,16 +564,18 @@ async function processStylusTransfer(job) {
   }
 }
 
-// Start the server
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n=== Karatoken Integrated Server Running ===`);
-  console.log(`Local: http://localhost:${PORT}`);
-  console.log(`Health Check: http://localhost:${PORT}/health`);
-  console.log(`Web Interface: http://localhost:${PORT}/index.html`);
-  console.log(`Features: Genre Swap, Stylus Transfer, YouTube Integration`);
-  console.log(`WebSocket: Enabled for real-time updates`);
-  console.log('==========================================\n');
-});
+// Start the server only if run directly
+if (require.main === module) {
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n=== Karatoken Integrated Server Running ===`);
+    console.log(`Local: http://localhost:${PORT}`);
+    console.log(`Health Check: http://localhost:${PORT}/health`);
+    console.log(`Web Interface: http://localhost:${PORT}/index.html`);
+    console.log(`Features: Genre Swap, Stylus Transfer, YouTube Integration`);
+    console.log(`WebSocket: Enabled for real-time updates`);
+    console.log('==========================================\n');
+  });
+}
 
 // Handle server errors
 server.on('error', (error) => {
@@ -578,4 +603,9 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('==========================\n');
 });
 
-module.exports = { app, server, io };
+module.exports = {
+  app,
+  server,
+  io,
+  resetRateLimiters: () => activeLimiters.forEach(tracker => tracker.clear())
+};
