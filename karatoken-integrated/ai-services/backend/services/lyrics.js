@@ -96,7 +96,10 @@ function srtToLrc(srtContent) {
     const h = (tsLine.charCodeAt(0) - 48) * 10 + (tsLine.charCodeAt(1) - 48);
     const m = (tsLine.charCodeAt(3) - 48) * 10 + (tsLine.charCodeAt(4) - 48);
     const s = (tsLine.charCodeAt(6) - 48) * 10 + (tsLine.charCodeAt(7) - 48);
-    const ms = (tsLine.charCodeAt(9) - 48) * 100 + (tsLine.charCodeAt(10) - 48) * 10 + (tsLine.charCodeAt(11) - 48);
+    const ms =
+      (tsLine.charCodeAt(9) - 48) * 100 +
+      (tsLine.charCodeAt(10) - 48) * 10 +
+      (tsLine.charCodeAt(11) - 48);
     const totalSeconds = h * 3600 + m * 60 + s + ms / 1000;
 
     // 3. Read text lines
