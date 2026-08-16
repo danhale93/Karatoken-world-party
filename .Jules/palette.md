@@ -1,5 +1,9 @@
 # Palette's Journal - Karatoken World Party
 
+## 2026-08-16 - Controlled Focus Transitions and Visual Pulsing on Autofilled Form Controls
+**Learning:** Calling `.focus()` repeatedly during sequential autofill operations on form fields causes erratic focus bouncing for keyboard and screen reader users. When programmatically populating multiple inputs from search selection components, apply visual highlight transitions (`input-highlight`) to all updated controls, but restrict explicit `.focus()` focus shifts to a single primary input element.
+**Action:** Always accept a parameter (e.g. `shouldFocus`) in highlight animation helpers during batch field population to direct user focus smoothly without focus jumping.
+
 ## 2026-08-13 - State-Synchronized Disabled Form Controls with Explanatory Tooltips and ARIA Attributes
 **Learning:** Initializing form buttons with disabled states is highly useful, but we must pair them with reactive input validation listeners and dynamic accessibility descriptors. If validation triggers are called on page load but not defined, they will cause fatal script ReferenceError crashes. Ensuring validator helper functions are fully defined, bound to input events, and update both visual `title` and screen-reader `aria-label` attributes prevents confusing, empty, or malformed form submissions.
 **Action:** Always provide robust, reactive validators that update button disabled properties, visual tooltips, and corresponding screen-reader ARIA labels, and ensure all invoked initialization helpers are fully defined to avoid fatal loading-time script crashes.
