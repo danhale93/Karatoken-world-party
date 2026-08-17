@@ -171,13 +171,16 @@
                     <div class="card-body">
                         <form id="stylusForm">
                             <div class="mb-3">
-                                <label for="contentUrl" class="form-label">Content Audio URL</label>
-                                <input type="text" class="form-control" id="contentUrl" required
-                                       placeholder="https://example.com/audio.mp3">
+                                <label for="contentUrl" class="form-label">Content Audio URL <span class="text-danger">*</span></label>
+                                <input type="url" class="form-control" id="contentUrl" required
+                                       placeholder="https://example.com/audio.mp3"
+                                       aria-describedby="contentUrlHelp">
+                                <div id="contentUrlHelp" class="form-text">Paste a direct audio URL to perform style transfer</div>
                             </div>
                             <div class="mb-3">
-                                <label for="styleGenre" class="form-label">Style Genre</label>
-                                <select class="form-select" id="styleGenre" required>
+                                <label for="styleGenre" class="form-label">Style Genre <span class="text-danger">*</span></label>
+                                <select class="form-select" id="styleGenre" required
+                                        aria-label="Select style genre">
                                     <option value="">Select a style</option>
                                     <option value="pop">Pop</option>
                                     <option value="rock">Rock</option>
@@ -186,7 +189,7 @@
                                     <option value="classical">Classical</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn btn-success" title="Process Style Transfer">
                                 <i class="bi bi-stars"></i> Process Style Transfer
                             </button>
                         </form>
