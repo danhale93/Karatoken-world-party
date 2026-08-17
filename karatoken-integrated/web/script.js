@@ -847,6 +847,35 @@
     }
   }
   
+  // Enable/disable search button based on input
+  function updateYtSearchButtonState() {
+    if (!ytSearchBtn) return;
+    const hasQuery = ytQueryInput?.value?.trim() !== "";
+    ytSearchBtn.disabled = !hasQuery;
+    if (ytSearchBtn.disabled) {
+      ytSearchBtn.setAttribute("title", "Please enter a search term");
+      ytSearchBtn.setAttribute("aria-label", "Please enter a search term");
+    } else {
+      ytSearchBtn.setAttribute("title", "Search YouTube");
+      ytSearchBtn.setAttribute("aria-label", "Search YouTube");
+    }
+  }
+
+  // Enable/disable download button based on input
+  function updateYtDownloadButtonState() {
+    if (!ytDlBtn) return;
+    const url = ytUrlInput?.value?.trim() || "";
+    const isValid = !!url.match(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/);
+    ytDlBtn.disabled = !isValid;
+    if (ytDlBtn.disabled) {
+      ytDlBtn.setAttribute("title", "Please enter or select a valid YouTube URL");
+      ytDlBtn.setAttribute("aria-label", "Please enter or select a valid YouTube URL");
+    } else {
+      ytDlBtn.setAttribute("title", "Download Audio");
+      ytDlBtn.setAttribute("aria-label", "Download Audio");
+    }
+  }
+
   genreAudioUrlInput?.addEventListener('input', updateSwapButtonState);
   genreTargetInput?.addEventListener('input', updateSwapButtonState);
   ytQueryInput?.addEventListener('input', updateYtSearchButtonState);

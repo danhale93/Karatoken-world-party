@@ -1,3 +1,7 @@
+
+> karatoken-mcp@1.0.0 start /app/karatoken-integrated
+> node integrated-server.js
+
 Starting integrated Karatoken server...
 
 === Karatoken Integrated Server Running ===
@@ -8,5 +12,5 @@ Features: Genre Swap, Stylus Transfer, YouTube Integration
 WebSocket: Enabled for real-time updates
 ==========================================
 
-Client connected: mryh--Jv-8vYbAYQAAAB
-Client disconnected: mryh--Jv-8vYbAYQAAAB
+Client connected: gukShqYqMilMODB4AAAB
+Client disconnected: gukShqYqMilMODB4AAAB
