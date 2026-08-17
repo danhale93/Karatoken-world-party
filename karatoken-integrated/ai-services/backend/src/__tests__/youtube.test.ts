@@ -3,7 +3,7 @@ import request from 'supertest';
 import ytdl from '@distube/ytdl-core';
 import ytsr from 'ytsr';
 import app from '../index';
-import { resetRateLimits } from '../routes/rateLimiter';
+import { resetAllRateLimiters } from '../services/rateLimiter';
 
 jest.mock('ytsr', () => jest.fn());
 jest.mock('@distube/ytdl-core', () => {
@@ -38,7 +38,7 @@ describe('YouTube Search & Download API (Security Focus)', () => {
   });
 
   beforeEach(() => {
-    resetRateLimits();
+    resetAllRateLimiters();
   });
 
   afterAll(done => {
@@ -73,7 +73,7 @@ describe('YouTube Search & Download API (Security Focus)', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('ok', false);
-      expect(response.body.error).toContain('Invalid or missing q parameter');
+      expect(response.body.error).toContain('Missing or invalid q parameter');
     });
 
     it('should fail with 400 when query parameter is an array (parameter pollution)', async () => {
@@ -83,7 +83,7 @@ describe('YouTube Search & Download API (Security Focus)', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('ok', false);
-      expect(response.body.error).toContain('Invalid or missing q parameter');
+      expect(response.body.error).toContain('Missing or invalid q parameter');
     });
   });
 
@@ -105,7 +105,7 @@ describe('YouTube Search & Download API (Security Focus)', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('ok', false);
-      expect(response.body.error).toContain('Invalid or missing url parameter');
+      expect(response.body.error).toContain('Invalid or missing YouTube URL');
     });
 
     it('should fail with 400 when URL is an array (parameter pollution)', async () => {
@@ -117,7 +117,7 @@ describe('YouTube Search & Download API (Security Focus)', () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('ok', false);
-      expect(response.body.error).toContain('Invalid or missing url parameter');
+      expect(response.body.error).toContain('Invalid or missing YouTube URL');
     });
   });
 
@@ -125,17 +125,15 @@ describe('YouTube Search & Download API (Security Focus)', () => {
     it('should block requests that exceed limit', async () => {
       (ytsr as jest.Mock).mockResolvedValue({ items: [] });
 
-      // We configured rate limiter for /search as 60 requests per minute, which is too high to easily test
-      // unless we make 61 requests, but let's test rate limiter behavior by simulating 16 requests on download
-      // (limit is 15 requests per minute).
-      for (let i = 0; i < 15; i++) {
+      // In testing env, max limit for rate limiters is 10 requests
+      for (let i = 0; i < 10; i++) {
         const response = await request(server)
           .post('/api/youtube/download')
           .send({ url: 'https://www.youtube.com/watch?v=mock_video_id' });
         expect(response.status).toBe(200);
       }
 
-      // 16th request should fail
+      // 11th request should fail
       const blockedResponse = await request(server)
         .post('/api/youtube/download')
         .send({ url: 'https://www.youtube.com/watch?v=mock_video_id' });
