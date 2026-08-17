@@ -163,7 +163,7 @@ describe('App Endpoints', () => {
       const response = await request(server).get('/api/youtube/search').query({ q: 'rock' });
       expect(response.status).toBe(429);
       expect(response.body).toHaveProperty('ok', false);
-      expect(response.body.error).toContain('Too many search requests');
+      expect(response.body.error).toContain('Too many requests');
     });
 
     it('should reset rate limit windows using global reset functionality', async () => {
