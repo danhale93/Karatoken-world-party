@@ -657,6 +657,18 @@ class MCPClient {
     }
   }
 
+  // Micro-UX helper: highlight modified form fields with a gentle success glow
+  highlightInput(input, shouldFocus = false) {
+    if (!input) return;
+    input.classList.add("input-highlight");
+    if (shouldFocus) {
+      input.focus();
+    }
+    setTimeout(() => {
+      input.classList.remove("input-highlight");
+    }, 1800);
+  }
+
   // Handle video selection from YouTube
   handleVideoSelect(video) {
     console.log("Selected video:", video);
@@ -664,17 +676,29 @@ class MCPClient {
     // Update form fields
     const audioUrlInput = document.getElementById("audioUrl");
     const songTitleInput = document.getElementById("songTitle");
+    const artistNameInput = document.getElementById("artistName");
 
-    if (audioUrlInput) audioUrlInput.value = video.url;
-    if (songTitleInput && video.title) songTitleInput.value = video.title;
+    if (audioUrlInput) {
+      audioUrlInput.value = video.url;
+      this.highlightInput(audioUrlInput, true);
+    }
+    if (songTitleInput && video.title) {
+      songTitleInput.value = video.title;
+      this.highlightInput(songTitleInput, false);
+    }
 
     // Try to extract artist and title from YouTube video title
     if (video.title) {
       const titleParts = video.title.split(" - ");
       if (titleParts.length === 2) {
-        const artistNameInput = document.getElementById("artistName");
-        if (artistNameInput) artistNameInput.value = titleParts[0].trim();
-        if (songTitleInput) songTitleInput.value = titleParts[1].trim();
+        if (artistNameInput) {
+          artistNameInput.value = titleParts[0].trim();
+          this.highlightInput(artistNameInput, false);
+        }
+        if (songTitleInput) {
+          songTitleInput.value = titleParts[1].trim();
+          this.highlightInput(songTitleInput, false);
+        }
       }
     }
 
@@ -712,16 +736,28 @@ class MCPClient {
     const genreSelect = document.getElementById("genre");
     const yearInput = document.getElementById("releaseYear");
 
-    if (titleInput && song.title) titleInput.value = song.title;
-    if (artistInput && song.artist) artistInput.value = song.artist;
+    if (titleInput && song.title) {
+      titleInput.value = song.title;
+      this.highlightInput(titleInput, true);
+    }
+    if (artistInput && song.artist) {
+      artistInput.value = song.artist;
+      this.highlightInput(artistInput, false);
+    }
     if (genreSelect && song.genre) {
       const genreValue = song.genre.toLowerCase();
       const option = Array.from(genreSelect.options).find(
         (opt) => opt.value.toLowerCase() === genreValue,
       );
-      if (option) option.selected = true;
+      if (option) {
+        option.selected = true;
+        this.highlightInput(genreSelect, false);
+      }
     }
-    if (yearInput && song.year) yearInput.value = song.year;
+    if (yearInput && song.year) {
+      yearInput.value = song.year;
+      this.highlightInput(yearInput, false);
+    }
 
     // Store lyrics for later use
     if (song.lyrics) {

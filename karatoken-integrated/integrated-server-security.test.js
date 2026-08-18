@@ -54,6 +54,15 @@ test('Integrated Server - Rate Limiting & Isolation Protections', async (t) => {
       });
       assert.ok(res.status !== 429, 'Request should succeed after rate limiter reset');
     });
+
+    await t.test('Verify security headers and disabled x-powered-by', async () => {
+      const res = await fetch(`${baseUrl}/health`);
+      assert.strictEqual(res.headers.get('x-content-type-options'), 'nosniff');
+      assert.strictEqual(res.headers.get('x-frame-options'), 'DENY');
+      assert.strictEqual(res.headers.get('x-xss-protection'), '1; mode=block');
+      assert.strictEqual(res.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
+      assert.strictEqual(res.headers.get('x-powered-by'), null);
+    });
   } finally {
     // Close the server
     await new Promise((resolve) => server.close(resolve));
