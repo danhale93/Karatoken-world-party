@@ -324,6 +324,80 @@ class MCPClient {
         }
       }
     });
+
+    // Form input validation state listeners
+    ["songTitle", "audioUrl", "genre"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", () => this.updateGenreSwapButtonState());
+        el.addEventListener("change", () => this.updateGenreSwapButtonState());
+      }
+    });
+
+    ["contentUrl", "styleGenre"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", () => this.updateStylusButtonState());
+        el.addEventListener("change", () => this.updateStylusButtonState());
+      }
+    });
+
+    this.updateGenreSwapButtonState();
+    this.updateStylusButtonState();
+  }
+
+  updateGenreSwapButtonState() {
+    const form = document.getElementById("genreSwapForm");
+    if (!form) return;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (!submitBtn) return;
+
+    const titleVal = (document.getElementById("songTitle")?.value || "").trim();
+    const urlVal = (document.getElementById("audioUrl")?.value || "").trim();
+    const genreVal = (document.getElementById("genre")?.value || "").trim();
+
+    const missing = [];
+    if (!titleVal) missing.push("Song Title");
+    if (!urlVal) missing.push("Audio URL");
+    if (!genreVal) missing.push("Target Genre");
+
+    if (missing.length > 0) {
+      submitBtn.disabled = true;
+      const msg = `Please enter required field(s): ${missing.join(", ")}`;
+      submitBtn.setAttribute("title", msg);
+      submitBtn.setAttribute("aria-label", msg);
+    } else {
+      submitBtn.disabled = false;
+      const msg = "Process Genre Swap (Ctrl + Enter)";
+      submitBtn.setAttribute("title", msg);
+      submitBtn.setAttribute("aria-label", msg);
+    }
+  }
+
+  updateStylusButtonState() {
+    const form = document.getElementById("stylusForm");
+    if (!form) return;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (!submitBtn) return;
+
+    const urlVal = (document.getElementById("contentUrl")?.value || "").trim();
+    const genreVal = (document.getElementById("styleGenre")?.value || "").trim();
+
+    const missing = [];
+    if (!urlVal) missing.push("Content Audio URL");
+    if (!genreVal) missing.push("Style Genre");
+
+    if (missing.length > 0) {
+      submitBtn.disabled = true;
+      const msg = `Please enter required field(s): ${missing.join(", ")}`;
+      submitBtn.setAttribute("title", msg);
+      submitBtn.setAttribute("aria-label", msg);
+    } else {
+      submitBtn.disabled = false;
+      const msg = "Process Style Transfer (Ctrl + Enter)";
+      submitBtn.setAttribute("title", msg);
+      submitBtn.setAttribute("aria-label", msg);
+    }
   }
 
   // Safe stubs to prevent page crashes on load, refresh, and tab clicks
@@ -694,6 +768,8 @@ class MCPClient {
       thumbnail: video.thumbnail,
     };
 
+    this.updateGenreSwapButtonState();
+
     // Show success message
     this.showToast(
       "YouTube video selected",
@@ -734,6 +810,8 @@ class MCPClient {
       const tab = new bootstrap.Tab(processTab);
       tab.show();
     }
+
+    this.updateGenreSwapButtonState();
 
     // Show success message
     this.showToast(
