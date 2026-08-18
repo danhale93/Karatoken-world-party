@@ -1,5 +1,9 @@
 # Palette's Journal - Karatoken World Party
 
+## 2026-08-17 - Form Clarity, Input Types, and Accessible Helper Associations
+**Learning:** Required form inputs without visual asterisk indicators (`<span class="text-danger">*</span>`) create uncertainty for users. Additionally, using `type="text"` instead of `type="url"` on URL fields prevents browser-native URL validation and deprives mobile users of optimized virtual keyboard layouts. Connecting helper text to inputs using `aria-describedby` provides immediate context to screen readers, while explicit `aria-label` attributes on select dropdowns ensure full assistive accessibility.
+**Action:** Always include required field indicators (`*`), use specialized input types (`type="url"`), link explanatory text via `aria-describedby`, and add explicit `aria-label` attributes on select elements for accessible form UX.
+
 ## 2026-08-13 - State-Synchronized Disabled Form Controls with Explanatory Tooltips and ARIA Attributes
 **Learning:** Initializing form buttons with disabled states is highly useful, but we must pair them with reactive input validation listeners and dynamic accessibility descriptors. If validation triggers are called on page load but not defined, they will cause fatal script ReferenceError crashes. Ensuring validator helper functions are fully defined, bound to input events, and update both visual `title` and screen-reader `aria-label` attributes prevents confusing, empty, or malformed form submissions.
 **Action:** Always provide robust, reactive validators that update button disabled properties, visual tooltips, and corresponding screen-reader ARIA labels, and ensure all invoked initialization helpers are fully defined to avoid fatal loading-time script crashes.

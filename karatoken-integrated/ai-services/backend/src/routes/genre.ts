@@ -81,7 +81,8 @@ const cacheMiddleware: RequestHandler = async (req, res, next) => {
   if (!audioUrl || !targetGenre) return next();
 
   const cacheKey = `${audioUrl}-${targetGenre}`.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-  const cachePath = path.join(CACHE_DIR, `${cacheKey}.json`);
+  const cacheDir = process.env.CACHE_DIR || path.join(process.cwd(), '.cache');
+  const cachePath = path.join(cacheDir, `${cacheKey}.json`);
 
   try {
     if (fs.existsSync(cachePath)) {
@@ -202,7 +203,11 @@ async function runGenreSwap(job: Job) {
     // ⚡ Bolt Optimization: Cache the completed job parameters and result to disk
     if (ENABLE_CACHE) {
       const cacheKey = `${audioUrl}-${targetGenre}`.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const cachePath = path.join(CACHE_DIR, `${cacheKey}.json`);
+      const cacheDir = process.env.CACHE_DIR || path.join(process.cwd(), '.cache');
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+      const cachePath = path.join(cacheDir, `${cacheKey}.json`);
       try {
         const cacheData = {
           ok: true,
