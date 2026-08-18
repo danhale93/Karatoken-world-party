@@ -85,3 +85,27 @@ test('Genre validation rejects directory traversal and malicious inputs', () => 
     assert.strictEqual(isValidGenre(genre), true, `Genre '${genre}' should be accepted as valid`);
   }
 });
+
+// Test BaseWorker job eviction to mitigate memory exhaustion (CWE-400)
+test('BaseWorker evicts oldest jobs when job capacity limit is reached', async () => {
+  const BaseWorker = require('./karatoken-integrated/workers/BaseWorker');
+  const worker = new BaseWorker();
+
+  const firstJob = await worker.createJob('test', { id: 0 });
+  const firstJobId = firstJob.id;
+
+  // Create jobs up to capacity (100 total)
+  for (let i = 1; i < 100; i++) {
+    await worker.createJob('test', { id: i });
+  }
+
+  assert.strictEqual(worker.jobs.size, 100, 'Worker should store exactly 100 jobs at capacity');
+  assert.ok(worker.jobs.has(firstJobId), 'First job should still exist at capacity');
+
+  // Creating 101st job should evict the first job
+  const newestJob = await worker.createJob('test', { id: 100 });
+
+  assert.strictEqual(worker.jobs.size, 100, 'Worker job map size should remain capped at 100');
+  assert.strictEqual(worker.jobs.has(firstJobId), false, 'First job should have been evicted');
+  assert.ok(worker.jobs.has(newestJob.id), 'Newest job should be present in worker job map');
+});
