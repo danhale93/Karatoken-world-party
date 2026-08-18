@@ -1,4 +1,6 @@
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
+
+const MAX_JOBS = 100;
 
 class BaseWorker {
   constructor() {
@@ -6,10 +8,18 @@ class BaseWorker {
   }
 
   generateJobId() {
-    return `job_${uuidv4()}`;
+    return `job_${randomUUID()}`;
   }
 
   async createJob(type, data) {
+    // Evict oldest job if max capacity reached to prevent memory exhaustion (CWE-400)
+    if (this.jobs.size >= MAX_JOBS) {
+      const oldestKey = this.jobs.keys().next().value;
+      if (oldestKey) {
+        this.jobs.delete(oldestKey);
+      }
+    }
+
     const jobId = this.generateJobId();
     const job = {
       id: jobId,
