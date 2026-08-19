@@ -86,13 +86,24 @@ test('GenreSwapWorker - Defense in depth genre validation', async () => {
   }
 });
 
-test('simple-server.js - Serves responses with standard security headers', async () => {
-  const simpleServerPath = require.resolve('./simple-server.js');
-  // We can read simple-server.js file and verify secure headers are configured
+test('Static & Preview Servers - Serves responses with standard security headers and disables x-powered-by', async () => {
   const fs = require('fs');
-  const content = fs.readFileSync(simpleServerPath, 'utf8');
-  assert.ok(content.includes('X-Content-Type-Options'), 'Should configure X-Content-Type-Options');
-  assert.ok(content.includes('X-Frame-Options'), 'Should configure X-Frame-Options');
-  assert.ok(content.includes('X-XSS-Protection'), 'Should configure X-XSS-Protection');
-  assert.ok(content.includes('Referrer-Policy'), 'Should configure Referrer-Policy');
+  const serverFiles = [
+    './simple-server.js',
+    './simple-backend.js',
+    './simple-backend-3100.js',
+    './debug-server.js'
+  ];
+
+  for (const relPath of serverFiles) {
+    const filePath = require.resolve(relPath);
+    const content = fs.readFileSync(filePath, 'utf8');
+    assert.ok(content.includes('X-Content-Type-Options'), `${relPath} should configure X-Content-Type-Options`);
+    assert.ok(content.includes('X-Frame-Options'), `${relPath} should configure X-Frame-Options`);
+    assert.ok(content.includes('X-XSS-Protection'), `${relPath} should configure X-XSS-Protection`);
+    assert.ok(content.includes('Referrer-Policy'), `${relPath} should configure Referrer-Policy`);
+    if (relPath !== './simple-server.js') {
+      assert.ok(content.includes("app.disable('x-powered-by')"), `${relPath} should disable x-powered-by`);
+    }
+  }
 });

@@ -67,8 +67,11 @@ describe('Genre Swap API', () => {
     });
 
     it('should fail background job when a non-audio file is supplied to prevent arbitrary file overwrite', async () => {
+      const nonAudioPath = path.join(__dirname, 'dummy-non-audio.json');
+      fs.writeFileSync(nonAudioPath, '{}');
+
       const createResponse = await request(server).post('/api/genre/swap').send({
-        audioUrl: 'package.json',
+        audioUrl: nonAudioPath,
         targetGenre: 'rock',
         karaokeMode: true,
       });
@@ -81,6 +84,10 @@ describe('Genre Swap API', () => {
       await new Promise(resolve => setTimeout(resolve, 1200));
 
       const statusResponse = await request(server).get(`/api/genre/status/${jobId}`);
+      if (fs.existsSync(nonAudioPath)) {
+        fs.unlinkSync(nonAudioPath);
+      }
+
       expect(statusResponse.status).toBe(200);
       expect(statusResponse.body.job.status).toBe('failed');
       expect(statusResponse.body.job.error).toContain(
@@ -89,8 +96,13 @@ describe('Genre Swap API', () => {
     });
 
     it('should fail background job when a directory is supplied as audioUrl', async () => {
+      const dirPath = path.join(__dirname, 'dummy-dir');
+      if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath);
+      }
+
       const createResponse = await request(server).post('/api/genre/swap').send({
-        audioUrl: 'src',
+        audioUrl: dirPath,
         targetGenre: 'rock',
         karaokeMode: true,
       });
@@ -103,6 +115,10 @@ describe('Genre Swap API', () => {
       await new Promise(resolve => setTimeout(resolve, 1200));
 
       const statusResponse = await request(server).get(`/api/genre/status/${jobId}`);
+      if (fs.existsSync(dirPath)) {
+        fs.rmdirSync(dirPath);
+      }
+
       expect(statusResponse.status).toBe(200);
       expect(statusResponse.body.job.status).toBe('failed');
       expect(statusResponse.body.job.error).toContain('Access denied: Path is not a regular file');
@@ -146,7 +162,7 @@ describe('Genre Swap API', () => {
     const expectedCacheKey = `${testAudioPath}-${targetGenre}`
       .replace(/[^a-z0-9]/gi, '_')
       .toLowerCase();
-    const cacheFilePath = path.join(__dirname, '../../.cache', `${expectedCacheKey}.json`);
+    const cacheFilePath = path.join(process.cwd(), '.cache', `${expectedCacheKey}.json`);
 
     afterAll(() => {
       // Clean up cached json and dummy files generated during the cache tests
@@ -183,11 +199,15 @@ describe('Genre Swap API', () => {
       expect(res1.body).toHaveProperty('ok', true);
       const jobId = res1.body.jobId;
 
-      // Wait for background job execution to finish (using optimized sleep, this takes ~30ms)
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Verify the job completed successfully
-      const statusRes1 = await request(server).get(`/api/genre/status/${jobId}`);
+      // Wait for background job execution to finish (takes ~30ms per step, ~150ms total with process.env.NODE_ENV==='test')
+      let statusRes1;
+      for (let i = 0; i < 20; i++) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        statusRes1 = await request(server).get(`/api/genre/status/${jobId}`);
+        if (statusRes1.body.job && statusRes1.body.job.status === 'completed') {
+          break;
+        }
+      }
       expect(statusRes1.status).toBe(200);
       expect(statusRes1.body.job.status).toBe('completed');
 
