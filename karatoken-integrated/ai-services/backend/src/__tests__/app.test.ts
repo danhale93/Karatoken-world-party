@@ -3,8 +3,28 @@ import { createServer } from 'http';
 import app from '../index';
 import fs from 'fs';
 import path from 'path';
+import { resetAllRateLimiters } from '../services/rateLimiter';
+
+jest.mock('ytsr', () => {
+  return jest.fn().mockResolvedValue({
+    items: [
+      {
+        type: 'video',
+        id: 'dQw4w9WgXcQ',
+        title: 'Mock Video',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        duration: '3:30',
+        thumbnails: [],
+        author: { name: 'Mock Channel', url: 'https://youtube.com' },
+      },
+    ],
+  });
+});
 
 describe('App Endpoints', () => {
+  beforeEach(() => {
+    resetAllRateLimiters();
+  });
   let server: any;
   const tmpDir = path.resolve(process.cwd(), 'tmp');
   const testFilePath = path.join(tmpDir, 'test-download-file.txt');
@@ -130,6 +150,37 @@ describe('App Endpoints', () => {
       expect(response2.status).toBe(400);
       expect(response2.body).toHaveProperty('ok', false);
       expect(response2.body.error).toBe('Missing or invalid q parameter');
+    });
+  });
+
+  describe('Rate Limiter Protection & Abuse Prevention', () => {
+    it('should block rapid requests to /api/youtube/search with 429 after 10 requests in test env', async () => {
+      // Node environment rate limit max is set to 10 in testing, making unit tests fast and efficient!
+      for (let i = 0; i < 10; i++) {
+        await request(server).get('/api/youtube/search').query({ q: 'rock' });
+      }
+
+      const response = await request(server).get('/api/youtube/search').query({ q: 'rock' });
+      expect(response.status).toBe(429);
+      expect(response.body).toHaveProperty('ok', false);
+      expect(response.body.error).toContain('Too many requests');
+    });
+
+    it('should reset rate limit windows using global reset functionality', async () => {
+      // Consume the quota
+      for (let i = 0; i < 10; i++) {
+        await request(server).get('/api/youtube/search').query({ q: 'rock' });
+      }
+
+      const blockedResponse = await request(server).get('/api/youtube/search').query({ q: 'rock' });
+      expect(blockedResponse.status).toBe(429);
+
+      // Trigger reset
+      resetAllRateLimiters();
+
+      // Should succeed now
+      const allowedResponse = await request(server).get('/api/youtube/search').query({ q: 'rock' });
+      expect(allowedResponse.status).not.toBe(429);
     });
   });
 
