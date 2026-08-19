@@ -12,7 +12,7 @@ jest.mock('pitchy', () => ({
   },
 }));
 
-import { detectPitch, analyzePitch } from '../../services/pitchDetection';
+import { detectPitch, analyzePitch, frequencyToNote } from '../../services/pitchDetection';
 import { AudioBuffer } from 'web-audio-api';
 
 // Mock pitchy ESM module
@@ -123,6 +123,21 @@ describe('Pitch Detection Service', () => {
       expect(analysis.maxPitch).toBe(0);
       expect(analysis.pitchRange).toBe(0);
       expect(analysis.pitchStability).toBe(0);
+    });
+  });
+
+  describe('frequencyToNote', () => {
+    it('should return -- for 0 or negative frequencies', () => {
+      expect(frequencyToNote(0)).toBe('--');
+      expect(frequencyToNote(-100)).toBe('--');
+    });
+
+    it('should correctly convert known frequencies to musical note names', () => {
+      expect(frequencyToNote(440)).toBe('A4');
+      expect(frequencyToNote(261.63)).toBe('C4');
+      expect(frequencyToNote(523.25)).toBe('C5');
+      expect(frequencyToNote(329.63)).toBe('E4');
+      expect(frequencyToNote(110)).toBe('A2');
     });
   });
 });
