@@ -10,6 +10,15 @@ class BaseWorker {
   }
 
   async createJob(type, data) {
+    // Prevent unbounded memory expansion (CWE-400) by capping in-memory jobs and evicting the oldest entries (FIFO)
+    const MAX_JOBS = 100;
+    if (this.jobs.size >= MAX_JOBS) {
+      const oldestKey = this.jobs.keys().next().value;
+      if (oldestKey !== undefined) {
+        this.jobs.delete(oldestKey);
+      }
+    }
+
     const jobId = this.generateJobId();
     const job = {
       id: jobId,

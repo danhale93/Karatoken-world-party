@@ -86,6 +86,23 @@ test('GenreSwapWorker - Defense in depth genre validation', async () => {
   }
 });
 
+test('BaseWorker - Memory cap capacity limit and FIFO eviction (CWE-400)', async () => {
+  const BaseWorker = require('./workers/BaseWorker');
+  const worker = new BaseWorker();
+
+  const createdJobs = [];
+  for (let i = 0; i < 105; i++) {
+    const job = await worker.createJob('test', { index: i });
+    createdJobs.push(job.id);
+  }
+
+  assert.strictEqual(worker.jobs.size, 100, 'Jobs map size must not exceed MAX_JOBS (100)');
+  assert.strictEqual(worker.jobs.has(createdJobs[0]), false, 'Oldest job (0) should have been evicted');
+  assert.strictEqual(worker.jobs.has(createdJobs[4]), false, 'Oldest job (4) should have been evicted');
+  assert.strictEqual(worker.jobs.has(createdJobs[5]), true, 'Job 5 should still exist in jobs map');
+  assert.strictEqual(worker.jobs.has(createdJobs[104]), true, 'Newest job (104) should exist in jobs map');
+});
+
 test('simple-server.js - Serves responses with standard security headers', async () => {
   const simpleServerPath = require.resolve('./simple-server.js');
   // We can read simple-server.js file and verify secure headers are configured
