@@ -306,6 +306,27 @@ class MCPClient {
         }
       });
 
+    // Input listeners for dynamic form validation state synchronization
+    ["songTitle", "audioUrl", "genre"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", () => this.updateGenreSwapButtonState());
+        el.addEventListener("change", () => this.updateGenreSwapButtonState());
+      }
+    });
+
+    ["contentUrl", "styleGenre"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", () => this.updateStylusButtonState());
+        el.addEventListener("change", () => this.updateStylusButtonState());
+      }
+    });
+
+    // Initial state calculation
+    this.updateGenreSwapButtonState();
+    this.updateStylusButtonState();
+
     // Ctrl+Enter keyboard shortcuts for form submissions
     document.addEventListener("keydown", (e) => {
       if (e.ctrlKey && e.key === "Enter") {
@@ -324,6 +345,56 @@ class MCPClient {
         }
       }
     });
+  }
+
+  // Dynamic validation state updater for Genre Swap form submit button
+  updateGenreSwapButtonState() {
+    const btn = document.getElementById("genreSwapSubmitBtn");
+    if (!btn) return;
+
+    const songTitle = (document.getElementById("songTitle")?.value || "").trim();
+    const audioUrl = (document.getElementById("audioUrl")?.value || "").trim();
+    const genre = (document.getElementById("genre")?.value || "").trim();
+
+    const missing = [];
+    if (!songTitle) missing.push("Song Title");
+    if (!audioUrl) missing.push("Audio URL");
+    if (!genre) missing.push("Target Genre");
+
+    btn.disabled = missing.length > 0;
+
+    if (missing.length > 0) {
+      const msg = `Please provide ${missing.join(", ")} to process genre swap`;
+      btn.setAttribute("title", msg);
+      btn.setAttribute("aria-label", msg);
+    } else {
+      btn.setAttribute("title", "Process Genre Swap (Ctrl + Enter)");
+      btn.setAttribute("aria-label", "Process Genre Swap (Ctrl + Enter)");
+    }
+  }
+
+  // Dynamic validation state updater for Stylus Transfer form submit button
+  updateStylusButtonState() {
+    const btn = document.getElementById("stylusSubmitBtn");
+    if (!btn) return;
+
+    const contentUrl = (document.getElementById("contentUrl")?.value || "").trim();
+    const styleGenre = (document.getElementById("styleGenre")?.value || "").trim();
+
+    const missing = [];
+    if (!contentUrl) missing.push("Content Audio URL");
+    if (!styleGenre) missing.push("Style Genre");
+
+    btn.disabled = missing.length > 0;
+
+    if (missing.length > 0) {
+      const msg = `Please provide ${missing.join(", ")} to process style transfer`;
+      btn.setAttribute("title", msg);
+      btn.setAttribute("aria-label", msg);
+    } else {
+      btn.setAttribute("title", "Process Style Transfer (Ctrl + Enter)");
+      btn.setAttribute("aria-label", "Process Style Transfer (Ctrl + Enter)");
+    }
   }
 
   // Safe stubs to prevent page crashes on load, refresh, and tab clicks
@@ -694,6 +765,9 @@ class MCPClient {
       thumbnail: video.thumbnail,
     };
 
+    // Update button states after programmatic auto-fill
+    this.updateGenreSwapButtonState();
+
     // Show success message
     this.showToast(
       "YouTube video selected",
@@ -734,6 +808,9 @@ class MCPClient {
       const tab = new bootstrap.Tab(processTab);
       tab.show();
     }
+
+    // Update button states after programmatic auto-fill
+    this.updateGenreSwapButtonState();
 
     // Show success message
     this.showToast(
