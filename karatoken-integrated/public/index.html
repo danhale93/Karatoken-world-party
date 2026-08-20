@@ -144,8 +144,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" id="genreSwapSubmitBtn" disabled aria-keyshortcuts="Control+Enter" title="Please provide Song Title, Audio URL, and Target Genre to process the swap" aria-label="Please provide Song Title, Audio URL, and Target Genre to process the swap">
                                 <i class="bi bi-arrow-repeat"></i> Process Genre Swap
+                                <kbd class="kbd-badge" title="Ctrl + Enter">Ctrl + ↵</kbd>
                             </button>
                         </form>
                         <div id="genreSwapProgress" class="mt-3 d-none">
@@ -186,8 +187,9 @@
                                     <option value="classical">Classical</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn btn-success" id="stylusSubmitBtn" disabled aria-keyshortcuts="Control+Enter" title="Please provide Content Audio URL and Style Genre to process style transfer" aria-label="Please provide Content Audio URL and Style Genre to process style transfer">
                                 <i class="bi bi-stars"></i> Process Style Transfer
+                                <kbd class="kbd-badge" title="Ctrl + Enter">Ctrl + ↵</kbd>
                             </button>
                         </form>
                         <div id="stylusProgress" class="mt-3 d-none">

@@ -348,6 +348,21 @@ audio {
 }
 
 /* Focus Visible Styles for Accessible Keyboard Navigation */
+/* Keyboard Shortcut Badges */
+.kbd-badge {
+    display: inline-block;
+    padding: 0.15em 0.4em;
+    font-size: 0.75em;
+    font-weight: 600;
+    line-height: 1;
+    color: inherit;
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 0.25rem;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
 button:focus-visible,
 .btn:focus-visible,
 a:focus-visible,
