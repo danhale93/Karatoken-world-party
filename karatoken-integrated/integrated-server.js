@@ -30,23 +30,33 @@ function rateLimiter(windowMs, maxRequests) {
     const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
     const now = Date.now();
 
-    if (!tracker.has(ip)) {
-      tracker.set(ip, []);
+    let timestamps = tracker.get(ip);
+    if (!timestamps) {
+      timestamps = [];
+      tracker.set(ip, timestamps);
     }
 
-    const timestamps = tracker.get(ip) || [];
-    // Filter timestamps older than the window
-    const validTimestamps = timestamps.filter(time => now - time < windowMs);
+    // ⚡ Bolt Optimization: Replace .filter() with in-place index scanning and .splice()
+    // Timestamps are stored in chronological order. Index scanning from 0 removes expired
+    // entries in-place without allocating a new Array on every request, eliminating GC pressure.
+    const cutoff = now - windowMs;
+    let expiredCount = 0;
+    while (expiredCount < timestamps.length && timestamps[expiredCount] <= cutoff) {
+      expiredCount++;
+    }
 
-    if (validTimestamps.length >= maxRequests) {
+    if (expiredCount > 0) {
+      timestamps.splice(0, expiredCount);
+    }
+
+    if (timestamps.length >= maxRequests) {
       return res.status(429).json({
         ok: false,
         error: 'Too many requests from this IP, please try again later.'
       });
     }
 
-    validTimestamps.push(now);
-    tracker.set(ip, validTimestamps);
+    timestamps.push(now);
     next();
   };
 }
@@ -55,13 +65,18 @@ function rateLimiter(windowMs, maxRequests) {
 const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
 const cleanupInterval = setInterval(() => {
   const now = Date.now();
+  const cutoff = now - 60 * 60 * 1000;
   activeLimiters.forEach(tracker => {
     for (const [ip, timestamps] of tracker.entries()) {
-      const filtered = timestamps.filter(timestamp => now - timestamp < 60 * 60 * 1000);
-      if (filtered.length === 0) {
+      // ⚡ Bolt Optimization: Use in-place index scanning and .splice() during periodic cleanup
+      let expiredCount = 0;
+      while (expiredCount < timestamps.length && timestamps[expiredCount] <= cutoff) {
+        expiredCount++;
+      }
+      if (expiredCount === timestamps.length) {
         tracker.delete(ip);
-      } else {
-        tracker.set(ip, filtered);
+      } else if (expiredCount > 0) {
+        timestamps.splice(0, expiredCount);
       }
     }
   });
