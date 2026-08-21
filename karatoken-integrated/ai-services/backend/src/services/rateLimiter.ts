@@ -1,4 +1,4 @@
-import { NextFunction, Request, RequestHandler, Response } from 'express';
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
 // Keeps track of all created limiter Maps globally so they can be cleared/reset during tests
 const activeLimiters: Map<string, number[]>[] = [];
@@ -28,24 +28,33 @@ export function createRateLimiter(windowMs: number, maxRequests: number): Reques
     const ip = req.ip || req.socket.remoteAddress || 'unknown';
     const now = Date.now();
 
-    if (!tracker.has(ip)) {
-      tracker.set(ip, []);
+    let timestamps = tracker.get(ip);
+    if (!timestamps) {
+      timestamps = [];
+      tracker.set(ip, timestamps);
     }
 
-    const timestamps = tracker.get(ip) || [];
+    // ⚡ Bolt Optimization: Replace .filter() with in-place index scanning and .splice()
+    // Timestamps are sorted chronologically. Scanning from index 0 purges expired entries
+    // in-place without allocating a new Array on every request, eliminating GC pressure.
+    const cutoff = now - windowMs;
+    let expiredCount = 0;
+    while (expiredCount < timestamps.length && timestamps[expiredCount] <= cutoff) {
+      expiredCount++;
+    }
 
-    // Filter out timestamps older than the window
-    const validTimestamps = timestamps.filter(timestamp => now - timestamp < windowMs);
+    if (expiredCount > 0) {
+      timestamps.splice(0, expiredCount);
+    }
 
-    if (validTimestamps.length >= maxRequests) {
+    if (timestamps.length >= maxRequests) {
       return res.status(429).json({
         ok: false,
         error: 'Too many requests from this IP, please try again later.',
       });
     }
 
-    validTimestamps.push(now);
-    tracker.set(ip, validTimestamps);
+    timestamps.push(now);
     return next();
   };
 }
@@ -55,14 +64,18 @@ export function createRateLimiter(windowMs: number, maxRequests: number): Reques
 const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
 const cleanupInterval = setInterval(() => {
   const now = Date.now();
+  const cutoff = now - 60 * 60 * 1000;
   activeLimiters.forEach(tracker => {
     for (const [ip, timestamps] of tracker.entries()) {
-      // Clean up keys whose timestamps have all expired relative to 1 hour
-      const filtered = timestamps.filter(timestamp => now - timestamp < 60 * 60 * 1000);
-      if (filtered.length === 0) {
+      // ⚡ Bolt Optimization: Use in-place index scanning and .splice() during periodic cleanup
+      let expiredCount = 0;
+      while (expiredCount < timestamps.length && timestamps[expiredCount] <= cutoff) {
+        expiredCount++;
+      }
+      if (expiredCount === timestamps.length) {
         tracker.delete(ip);
-      } else {
-        tracker.set(ip, filtered);
+      } else if (expiredCount > 0) {
+        timestamps.splice(0, expiredCount);
       }
     }
   });
