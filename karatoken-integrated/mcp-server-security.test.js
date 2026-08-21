@@ -57,6 +57,29 @@ test('MCPServer - Rate Limiting & Reset Protections', async (t) => {
   }
 });
 
+const StylusWorker = require('./workers/StylusWorker');
+
+test('StylusWorker - Defense in depth styleGenre validation', async () => {
+  const worker = new StylusWorker();
+
+  const invalidGenres = [
+    '../../etc/passwd',
+    'pop; rm -rf /',
+    'rock\0',
+    'genre&&touch',
+    ''
+  ];
+
+  for (const styleGenre of invalidGenres) {
+    const job = { id: 'test_job', data: { contentUrl: 'test.mp3', styleGenre } };
+    await assert.rejects(
+      () => worker.performJob(job),
+      /Invalid styleGenre format/,
+      `styleGenre '${styleGenre}' should be rejected by worker validation`
+    );
+  }
+});
+
 test('GenreSwapWorker - Defense in depth genre validation', async () => {
   const worker = new GenreSwapWorker();
 

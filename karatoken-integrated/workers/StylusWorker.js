@@ -60,6 +60,11 @@ class StylusWorker extends BaseWorker {
   async performJob(job) {
     const { contentUrl, styleGenre } = job.data;
     
+    // Defense-in-depth validation for styleGenre at the worker entry boundary
+    if (typeof styleGenre !== 'string' || !/^[a-zA-Z0-9\s_-]+$/.test(styleGenre)) {
+      throw new Error('Invalid styleGenre format');
+    }
+
     // Create a unique directory for this job
     const jobDir = path.join(this.workDir, `stylus_${job.id}`);
     await fs.mkdir(jobDir, { recursive: true });
