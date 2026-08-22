@@ -59,3 +59,36 @@ test('Integrated Server - Rate Limiting & Isolation Protections', async (t) => {
     await new Promise((resolve) => server.close(resolve));
   }
 });
+
+test('Express Servers - Security Headers and x-powered-by disabling', async (t) => {
+  const serversToTest = [
+    { name: 'debug-server.js', modulePath: './debug-server' },
+    { name: 'simple-backend.js', modulePath: './simple-backend' },
+    { name: 'simple-backend-3100.js', modulePath: './simple-backend-3100' }
+  ];
+
+  for (const { name, modulePath } of serversToTest) {
+    await t.test(`${name} serves responses with standard security headers and without x-powered-by`, async () => {
+      // Require the module dynamically
+      delete require.cache[require.resolve(modulePath)];
+      const appModule = require(modulePath);
+      // Determine app or server instance
+      const app = appModule.app || appModule;
+
+      const testServer = http.createServer(app);
+      await new Promise((resolve) => testServer.listen(0, resolve));
+      const port = testServer.address().port;
+
+      try {
+        const res = await fetch(`http://localhost:${port}/health`);
+        assert.strictEqual(res.headers.get('x-content-type-options'), 'nosniff');
+        assert.strictEqual(res.headers.get('x-frame-options'), 'DENY');
+        assert.strictEqual(res.headers.get('x-xss-protection'), '1; mode=block');
+        assert.strictEqual(res.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
+        assert.strictEqual(res.headers.get('x-powered-by'), null);
+      } finally {
+        await new Promise((resolve) => testServer.close(resolve));
+      }
+    });
+  }
+});

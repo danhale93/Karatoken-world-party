@@ -5,7 +5,17 @@ const cors = require('cors');
 console.log('Starting debug server...');
 
 const app = express();
+app.disable('x-powered-by');
 const PORT = 3100;
+
+// Security headers middleware to mitigate basic web vulnerabilities
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 // Enable CORS
 app.use(cors());
@@ -27,25 +37,27 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Start the server
-const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n=== Debug Server Running ===`);
-  console.log(`Local: http://localhost:${PORT}`);
-  console.log(`Health Check: http://localhost:${PORT}/health`);
-  console.log(`Web Interface: http://localhost:${PORT}/index.html`);
-  console.log('==========================\n');
-});
+// Start the server only if run directly
+if (require.main === module) {
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n=== Debug Server Running ===`);
+    console.log(`Local: http://localhost:${PORT}`);
+    console.log(`Health Check: http://localhost:${PORT}/health`);
+    console.log(`Web Interface: http://localhost:${PORT}/index.html`);
+    console.log('==========================\n');
+  });
 
-// Handle server errors
-server.on('error', (error) => {
-  console.error('\n=== Server Error ===');
-  console.error(error);
-  if (error.code === 'EADDRINUSE') {
-    console.error(`\nPort ${PORT} is already in use. Please free the port or use a different one.`);
-  }
-  console.error('====================\n');
-  process.exit(1);
-});
+  // Handle server errors
+  server.on('error', (error) => {
+    console.error('\n=== Server Error ===');
+    console.error(error);
+    if (error.code === 'EADDRINUSE') {
+      console.error(`\nPort ${PORT} is already in use. Please free the port or use a different one.`);
+    }
+    console.error('====================\n');
+    process.exit(1);
+  });
+}
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
@@ -62,3 +74,5 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('Reason:', reason);
   console.error('==========================\n');
 });
+
+module.exports = { app };
