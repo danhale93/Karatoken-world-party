@@ -183,11 +183,21 @@ describe('Genre Swap API', () => {
       expect(res1.body).toHaveProperty('ok', true);
       const jobId = res1.body.jobId;
 
-      // Wait for background job execution to finish (using optimized sleep, this takes ~30ms)
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Poll until background job completes or timeout occurs
+      let statusRes1: any;
+      const maxAttempts = 50;
+      for (let i = 0; i < maxAttempts; i++) {
+        statusRes1 = await request(server).get(`/api/genre/status/${jobId}`);
+        if (
+          statusRes1.body?.job?.status === 'completed' ||
+          statusRes1.body?.job?.status === 'failed'
+        ) {
+          break;
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
 
       // Verify the job completed successfully
-      const statusRes1 = await request(server).get(`/api/genre/status/${jobId}`);
       expect(statusRes1.status).toBe(200);
       expect(statusRes1.body.job.status).toBe('completed');
 

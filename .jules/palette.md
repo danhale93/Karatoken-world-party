@@ -1,5 +1,9 @@
 # Palette's Journal - Karatoken World Party
 
+## 2026-08-22 - Visual Pulse Transitions for Programmatically Populated Input Controls
+**Learning:** Programmatically updating form input fields (such as auto-filling song titles, artist names, or audio URLs when selecting YouTube videos or USDB search items) can leave users confused about what changed on screen. Applying a temporary, high-contrast visual glow transition (e.g., green `#198754` border and pulse shadow for 2 seconds) on the updated controls immediately draws sight and focus without causing jarring layout shifts or focus bouncing across multiple fields.
+**Action:** When programmatically populating or modifying input control values, call a dedicated micro-UX helper like `highlightInput(input, shouldFocus)` to provide a smooth, localized visual feedback glow.
+
 ## 2026-08-13 - State-Synchronized Disabled Form Controls with Explanatory Tooltips and ARIA Attributes
 **Learning:** Initializing form buttons with disabled states is highly useful, but we must pair them with reactive input validation listeners and dynamic accessibility descriptors. If validation triggers are called on page load but not defined, they will cause fatal script ReferenceError crashes. Ensuring validator helper functions are fully defined, bound to input events, and update both visual `title` and screen-reader `aria-label` attributes prevents confusing, empty, or malformed form submissions.
 **Action:** Always provide robust, reactive validators that update button disabled properties, visual tooltips, and corresponding screen-reader ARIA labels, and ensure all invoked initialization helpers are fully defined to avoid fatal loading-time script crashes.
