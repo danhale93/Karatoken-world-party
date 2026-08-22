@@ -18,7 +18,28 @@ export function resetAllRateLimiters(): void {
  * @param windowMs Time window in milliseconds
  * @param maxRequests Maximum number of requests allowed in the time window per IP
  */
-export function createRateLimiter(windowMs: number, maxRequests: number): RequestHandler {
+export function createRateLimiter(
+  windowMs: number | { windowMs: number; max: number; message?: string },
+  maxRequests?: number
+): RequestHandler {
+  let wMs: number;
+  let maxReq: number;
+  let customMessage: string | undefined;
+
+  if (typeof windowMs === 'object') {
+    wMs = windowMs.windowMs;
+    maxReq = windowMs.max;
+    customMessage = windowMs.message;
+  } else {
+    wMs = windowMs;
+    maxReq = maxRequests || 100;
+  }
+
+  // Allow test override via NODE_ENV or RATE_LIMIT_MAX
+  if (process.env.NODE_ENV === 'test' && !process.env.RATE_LIMIT_MAX) {
+    maxReq = Math.min(maxReq, 10);
+  }
+
   // Instantiate the tracker Map inside the middleware factory function so each route gets its own independent tracking store
   const tracker = new Map<string, number[]>();
   activeLimiters.push(tracker);
@@ -35,12 +56,12 @@ export function createRateLimiter(windowMs: number, maxRequests: number): Reques
     const timestamps = tracker.get(ip) || [];
 
     // Filter out timestamps older than the window
-    const validTimestamps = timestamps.filter(timestamp => now - timestamp < windowMs);
+    const validTimestamps = timestamps.filter(timestamp => now - timestamp < wMs);
 
-    if (validTimestamps.length >= maxRequests) {
+    if (validTimestamps.length >= maxReq) {
       return res.status(429).json({
         ok: false,
-        error: 'Too many requests from this IP, please try again later.',
+        error: customMessage || 'Too many requests from this IP, please try again later.',
       });
     }
 

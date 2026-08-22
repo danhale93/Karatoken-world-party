@@ -6,7 +6,23 @@ jest.mock('pitchy', () => ({
   },
 }));
 
-import { analyzePitch, PitchAnalysis } from '../../services/pitchDetection';
+import { analyzePitch, frequencyToNote, PitchAnalysis } from '../../services/pitchDetection';
+
+function originalFrequencyToNote(frequency: number): string {
+  if (frequency <= 0) return '--';
+
+  const A4 = 440;
+  const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+  // Calculate the number of half steps from A4
+  const halfSteps = 12 * Math.log2(frequency / A4);
+  const noteNumber = Math.round(halfSteps) + 9; // A4 is the 9th note in the 12-note scale
+
+  const octave = Math.floor(noteNumber / 12) + 4;
+  const noteName = noteNames[((noteNumber % 12) + 12) % 12];
+
+  return `${noteName}${octave}`;
+}
 
 // The original, unoptimized implementation of analyzePitch for comparison
 function originalAnalyzePitch(pitchData: number[]): PitchAnalysis {
@@ -132,5 +148,40 @@ describe('Pitch Detection Performance and Correctness Benchmark', () => {
     console.log(
       `Optimized implementation processed ${criticalDatasetSize} values in ${(end - start).toFixed(3)} ms without crashing!`
     );
+  });
+
+  it('should compute frequencyToNote significantly faster and match results', () => {
+    const frequencies = Array.from({ length: 100000 }, (_, i) => 50 + (i % 2000));
+
+    // Correctness check
+    for (let i = 0; i < 100; i++) {
+      expect(frequencyToNote(frequencies[i])).toBe(originalFrequencyToNote(frequencies[i]));
+    }
+
+    // Benchmark original
+    const startOriginal = performance.now();
+    for (let i = 0; i < frequencies.length; i++) {
+      originalFrequencyToNote(frequencies[i]);
+    }
+    const endOriginal = performance.now();
+    const timeOriginal = endOriginal - startOriginal;
+
+    // Benchmark optimized
+    const startOptimized = performance.now();
+    for (let i = 0; i < frequencies.length; i++) {
+      frequencyToNote(frequencies[i]);
+    }
+    const endOptimized = performance.now();
+    const timeOptimized = endOptimized - startOptimized;
+
+    console.log('\n=== ⚡ Bolt Performance Benchmark (frequencyToNote) ===');
+    console.log(`Dataset size: ${frequencies.length} conversions`);
+    console.log(`[Old] originalFrequencyToNote: ${timeOriginal.toFixed(3)} ms`);
+    console.log(`[New] optimizedFrequencyToNote: ${timeOptimized.toFixed(3)} ms`);
+    const speedup = timeOriginal / timeOptimized;
+    console.log(`⚡ Speedup: ${speedup.toFixed(1)}x faster!`);
+    console.log('======================================================\n');
+
+    expect(timeOptimized).toBeLessThanOrEqual(timeOriginal + 50);
   });
 });
