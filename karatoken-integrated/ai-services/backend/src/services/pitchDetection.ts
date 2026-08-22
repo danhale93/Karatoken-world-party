@@ -103,19 +103,21 @@ export function analyzePitch(pitchData: number[]): PitchAnalysis {
   };
 }
 
+// ⚡ Bolt Optimization: Precompute static pitch note calculation constants at module scope.
+// This eliminates array re-allocation overhead and replaces logarithmic division with subtraction on every function call.
+const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] as const;
+const LOG2_A4 = Math.log2(440);
+
 // Helper function to convert frequency to musical note
 export function frequencyToNote(frequency: number): string {
   if (frequency <= 0) return '--';
 
-  const A4 = 440;
-  const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-
-  // Calculate the number of half steps from A4
-  const halfSteps = 12 * Math.log2(frequency / A4);
+  // Calculate the number of half steps from A4 using precomputed log2(440)
+  const halfSteps = 12 * (Math.log2(frequency) - LOG2_A4);
   const noteNumber = Math.round(halfSteps) + 9; // A4 is the 9th note in the 12-note scale
 
   const octave = Math.floor(noteNumber / 12) + 4;
-  const noteName = noteNames[((noteNumber % 12) + 12) % 12];
+  const noteName = NOTE_NAMES[((noteNumber % 12) + 12) % 12];
 
   return `${noteName}${octave}`;
 }
