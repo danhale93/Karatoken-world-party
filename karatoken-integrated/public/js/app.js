@@ -641,6 +641,21 @@ class MCPClient {
     }
   }
 
+  // Highlight input with a pleasant visual pulse
+  highlightInput(input, shouldFocus = false) {
+    if (!input) return;
+    if (shouldFocus) input.focus();
+    input.style.setProperty('border-color', '#198754', 'important');
+    input.style.setProperty('box-shadow', '0 0 0 0.25rem rgba(25, 135, 84, 0.25)', 'important');
+    input.style.setProperty('transition', 'all 0.3s ease-in-out', 'important');
+
+    setTimeout(() => {
+      input.style.removeProperty('border-color');
+      input.style.removeProperty('box-shadow');
+      input.style.removeProperty('transition');
+    }, 2000);
+  }
+
   getStatusMessage(status) {
     switch (status.status) {
       case "queued":
@@ -665,16 +680,29 @@ class MCPClient {
     const audioUrlInput = document.getElementById("audioUrl");
     const songTitleInput = document.getElementById("songTitle");
 
-    if (audioUrlInput) audioUrlInput.value = video.url;
-    if (songTitleInput && video.title) songTitleInput.value = video.title;
+    const artistNameInput = document.getElementById("artistName");
+
+    if (audioUrlInput) {
+      audioUrlInput.value = video.url;
+      this.highlightInput(audioUrlInput);
+    }
+    if (songTitleInput && video.title) {
+      songTitleInput.value = video.title;
+      this.highlightInput(songTitleInput);
+    }
 
     // Try to extract artist and title from YouTube video title
     if (video.title) {
       const titleParts = video.title.split(" - ");
       if (titleParts.length === 2) {
-        const artistNameInput = document.getElementById("artistName");
-        if (artistNameInput) artistNameInput.value = titleParts[0].trim();
-        if (songTitleInput) songTitleInput.value = titleParts[1].trim();
+        if (artistNameInput) {
+          artistNameInput.value = titleParts[0].trim();
+          this.highlightInput(artistNameInput);
+        }
+        if (songTitleInput) {
+          songTitleInput.value = titleParts[1].trim();
+          this.highlightInput(songTitleInput);
+        }
       }
     }
 
@@ -712,16 +740,28 @@ class MCPClient {
     const genreSelect = document.getElementById("genre");
     const yearInput = document.getElementById("releaseYear");
 
-    if (titleInput && song.title) titleInput.value = song.title;
-    if (artistInput && song.artist) artistInput.value = song.artist;
+    if (titleInput && song.title) {
+      titleInput.value = song.title;
+      this.highlightInput(titleInput);
+    }
+    if (artistInput && song.artist) {
+      artistInput.value = song.artist;
+      this.highlightInput(artistInput);
+    }
     if (genreSelect && song.genre) {
       const genreValue = song.genre.toLowerCase();
       const option = Array.from(genreSelect.options).find(
         (opt) => opt.value.toLowerCase() === genreValue,
       );
-      if (option) option.selected = true;
+      if (option) {
+        option.selected = true;
+        this.highlightInput(genreSelect);
+      }
     }
-    if (yearInput && song.year) yearInput.value = song.year;
+    if (yearInput && song.year) {
+      yearInput.value = song.year;
+      this.highlightInput(yearInput);
+    }
 
     // Store lyrics for later use
     if (song.lyrics) {
