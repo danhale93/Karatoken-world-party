@@ -652,7 +652,9 @@ class MCPClient {
     setTimeout(() => {
       input.style.removeProperty('border-color');
       input.style.removeProperty('box-shadow');
-      input.style.removeProperty('transition');
+      setTimeout(() => {
+        input.style.removeProperty('transition');
+      }, 300);
     }, 2000);
   }
 
@@ -686,10 +688,6 @@ class MCPClient {
       audioUrlInput.value = video.url;
       this.highlightInput(audioUrlInput);
     }
-    if (songTitleInput && video.title) {
-      songTitleInput.value = video.title;
-      this.highlightInput(songTitleInput);
-    }
 
     // Try to extract artist and title from YouTube video title
     if (video.title) {
@@ -701,6 +699,11 @@ class MCPClient {
         }
         if (songTitleInput) {
           songTitleInput.value = titleParts[1].trim();
+          this.highlightInput(songTitleInput);
+        }
+      } else {
+        if (songTitleInput) {
+          songTitleInput.value = video.title;
           this.highlightInput(songTitleInput);
         }
       }

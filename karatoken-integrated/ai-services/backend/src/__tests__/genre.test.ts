@@ -188,7 +188,10 @@ describe('Genre Swap API', () => {
       const maxAttempts = 50;
       for (let i = 0; i < maxAttempts; i++) {
         statusRes1 = await request(server).get(`/api/genre/status/${jobId}`);
-        if (statusRes1.body?.job?.status === 'completed' || statusRes1.body?.job?.status === 'failed') {
+        if (
+          statusRes1.body?.job?.status === 'completed' ||
+          statusRes1.body?.job?.status === 'failed'
+        ) {
           break;
         }
         await new Promise(resolve => setTimeout(resolve, 100));
