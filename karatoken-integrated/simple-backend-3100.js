@@ -3,7 +3,17 @@ const path = require('path');
 const cors = require('cors');
 
 const app = express();
+app.disable('x-powered-by');
 const PORT = 3100; // Changed from 3001 to 3100
+
+// Security headers middleware to mitigate basic web vulnerabilities
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 // Enable CORS for all routes
 app.use(cors());
@@ -25,19 +35,23 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Start the server
-const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log('Health check: http://localhost:3100/health');
-  console.log('Web interface: http://localhost:3100');
-});
+// Start the server only if run directly
+if (require.main === module) {
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+    console.log('Health check: http://localhost:3100/health');
+    console.log('Web interface: http://localhost:3100');
+  });
 
-// Handle server errors
-server.on('error', (error) => {
-  if (error.code === 'EADDRINUSE') {
-    console.error(`Port ${PORT} is already in use`);
-  } else {
-    console.error('Server error:', error);
-  }
-  process.exit(1);
-});
+  // Handle server errors
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+      console.error(`Port ${PORT} is already in use`);
+    } else {
+      console.error('Server error:', error);
+    }
+    process.exit(1);
+  });
+}
+
+module.exports = { app };

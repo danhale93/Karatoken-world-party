@@ -3,7 +3,17 @@ const path = require('path');
 const cors = require('cors');
 
 const app = express();
+app.disable('x-powered-by');
 const PORT = 3001;
+
+// Security headers middleware to mitigate basic web vulnerabilities
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 // Enable CORS for all routes
 app.use(cors());
@@ -23,9 +33,13 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log('Health check: http://localhost:3001/health');
-  console.log('Web interface: http://localhost:3001');
-});
+// Start the server only if run directly
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+    console.log('Health check: http://localhost:3001/health');
+    console.log('Web interface: http://localhost:3001');
+  });
+}
+
+module.exports = { app };
